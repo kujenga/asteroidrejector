@@ -4,3 +4,7 @@ offline_training
 
 *.key
 .DS_Store
+
+output
+
+asteroid_reject_tester.py

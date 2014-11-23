@@ -1,11 +1,8 @@
-import sys
-import argparse
-
+#!//anaconda/bin/python
 # Asteroid Data Hunter project
 
 # Aaron Taylor
 
-from astropy.io import fits
 
 class AsteroidRejector:
 
@@ -27,7 +24,6 @@ class AsteroidRejector:
     def testing_data(imageData=[], detections=[]):
         print("testing_data not yet implemented")
 
-
     # Method:	getAnswer
     # Parameters:
     # Returns:	int[]
@@ -36,31 +32,34 @@ class AsteroidRejector:
         print("get_answer not yet implemented")
 
 
-
 if __name__ == "__main__":
     astRejector = AsteroidRejector()
 
     for i in range(1000):
         N = readLine()
+        imageData = []
         for j in range(N):
             imageData[j] = readInt()
         M = readLine()
+        detections = []
         for j in range(M):
             detections[j] = readLine()
-        result = astRejector.trainingData(imageData, detections)
+        result = astRejector.training_data(imageData, detections)
         print(result)
 
     for i in range(200):
         N = parseInt(readLine())
+        imageData = []
         for j in range(N):
             imageData[j] = readInt()
         M = parseInt(readLine())
+        detections = []
         for j in range(M):
             detections[j] = readLine()
-        result = astRejector.testingData(imageData, detections)
+        result = astRejector.testing_data(imageData, detections)
         print(result)
 
-    results = get_answer
-    printLine(length(results))
+    results = astRejector.get_answer
+    print(len(results))
     for i in range(len(results)):
         print(results[i])
