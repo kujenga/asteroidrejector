@@ -3,3 +3,4 @@ offline_training
 *.tar
 
 *.key
+.DS_Store
