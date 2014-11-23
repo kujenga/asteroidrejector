@@ -1,0 +1,118 @@
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+</head>
+<body>
+<h3>Downloads </h3>
+<ul>
+<li><a href="http://www.topcoder.com/contest/problem/AsteroidRejector/t50CZje6ytwZvu4rLu1Nm5krXc/v2/tester.jar">Executable JAR of the offline tester</a>
+</li><li><a href="http://www.topcoder.com/contest/problem/AsteroidRejector/t50CZje6ytwZvu4rLu1Nm5krXc/v2/AsteroidRejectTester.java">Source code of the offline tester</a>
+</li><li><a href="http://topcodermm.s3-website-us-east-1.amazonaws.com/AsteroidRejector_1WjhQ7Pae7fLG3ufKeIiMiz/offline_training.zip">Training data</a>
+</li>
+</ul>
+<hr>
+<p>In order to use the offline tester / visualizer tool for testing your
+ solution locally, you'll have to modify your solution by adding the 
+main method that interacts with the tester / visualizer via reading data
+ from standard input and writing data to standard
+ output. As long as you do not change the implementation of method <i>trainingData</i>, <i>
+testingData</i> and <i>getAnswer</i> this doesn't affect the way your solution works when being submitted to our server.
+</p>
+<p>To simulate a single test case, your program should implement the 
+following protocol (each integer/string is to be read from / printed in a
+ separate line):
+</p>
+<ol>
+<li>For exactly 1000 iterations do:
+<ul>
+    <li>Read integer <i>N</i>.</li>
+    <li>Read <i>N</i> integers: <b>imageData[0]</b>, <b>imageData[1]</b>, ..., <b>imageData[N-1]</b></li>
+    <li>Read integer <i>M</i>.</li>
+    <li>Read <i>M</i> strings: <b>detections[0]</b>, <b>detections[1]</b>, ..., <b>detections[M-1]</b></li>
+    <li>Call <b>result = trainingData(imageData, detections)</b></li>
+    <li>Print the result value and flush the standard output stream.</li>
+</ul>
+</li>
+<li>For exactly 200 iterations do:
+<ul>
+    <li>Read integer <i>N</i>.</li>
+    <li>Read <i>N</i> integers: <b>imageData[0]</b>, <b>imageData[1]</b>, ..., <b>imageData[N-1]</b></li>
+    <li>Read integer <i>M</i>.</li>
+    <li>Read <i>M</i> strings: <b>detections[0]</b>, <b>detections[1]</b>, ..., <b>detections[M-1]</b></li>
+    <li>Call <b>result = testingData(imageData, detections)</b></li>
+    <li>Print the result value and flush the standard output stream.</li>
+</ul>
+</li>
+<li>Call <b>result[] = getAnswer()</b></li>
+<li>Print the length of result[]</li>
+<li>Print each element in result[] on a line and flush the standard output stream</li>
+</ol>
+<p>In other words, you should implement the following pseudocode in the main method of your solution:</p>
+
+<pre>
+    for (i=0; i &lt; 1000; i++)
+    {
+        N = parseInt(readLine())    
+        for (j=0; j &lt; N; j++)
+            imageData[j] = readInt()
+        M = parseInt(readLine())    
+        for (j=0; j &lt; M; j++)
+            detections[j] = readLine()
+        result = trainingData(imageData, detections)
+        printLine(result)
+        flush(stdout)
+    }
+    for (i=0; i &lt; 200; i++)
+    {
+        N = parseInt(readLine())    
+        for (j=0; j &lt; N; j++)
+            imageData[j] = readInt()
+        M = parseInt(readLine())    
+        for (j=0; j &lt; M; j++)
+            detections[j] = readLine()
+        result = testingData(imageData, detections)
+        printLine(result)
+        flush(stdout)
+    }
+    results = getAnswer()
+    printLine(length(results))
+    for (i=0;i &lt; length(results); i++)
+        printLine(results[i])
+    flush(stdout)      
+</pre>
+<p>The tester can be run as follows. </p>
+<pre>java -jar tester.jar -folder &lt;folder&gt; -train &lt;training file&gt; -test &lt;test file&gt; -exec &lt;exec command&gt; -vis </pre>
+<p>Your solution supplied by "exec command" will be executed on a training and test set specified by 
+"training file" and "test file".
+</p>
+<p>"exec command" should contain a path to an executable of your 
+solution. "training file" and "test file" should point to the supplied 
+example_train.txt and example_test.txt. "folder" specifies the directory in which all
+ the training data is stored. </p>
+<p>Visualization results will be saved in PNG format into files "D_XX.png" or "R_XX.png". Where XX is the number of the detection. "D_XX.png" will be used when the detections was not rejected by the operator and "R_XX.png" if it was rejected.
+</p>
+<p>&nbsp;</p>
+<p><b>Sample usage</b></p>
+<p>Download the <a href="http://topcodermm.s3-website-us-east-1.amazonaws.com/AsteroidRejector_1WjhQ7Pae7fLG3ufKeIiMiz/offline_training.zip">training data</a>, put it into some folder at your machine and extract archives. The contents of your folder should be like:
+</p>
+<pre>data
+example_train.txt
+example_test.txt
+</pre>
+<p>Modify your solution as explained above and put the executable (solution or solution.exe) into the same folder. Also put the provided tester.jar there.
+</p>
+<p>Now you can run the tester like this: </p>
+<pre>java -jar tester.jar -folder data/ -train example_train.txt -test example_test.txt -exec solution[.exe] -vis
+</pre>
+<p>This will execute your solution using the example test case data. The visualizations will be saved.
+</p>
+<p>&nbsp;</p>
+<p><b>Final notes</b></p>
+<p>You can print any debug information of your solution to the standard 
+error stream and it will be forwarded to the standard output of the 
+tester.
+</p>
+<p>For more information on using visualizers, please check the following <a href="http://apps.topcoder.com/forums/?module=Thread&amp;threadID=670892&amp;start=0">
+recipe draft</a> from TopCoder Cookbook. Note that this is not a troubleshooting thread, please use the
+<a href="http://apps.topcoder.com/forums/?module=ThreadList&forumID=579684">match forum</a> for questions instead. </p>
+
+</body></html>

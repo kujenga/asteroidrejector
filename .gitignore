@@ -1,3 +1,5 @@
 offline_training
 *.zip
 *.tar
+
+*.key
