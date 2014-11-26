@@ -14,7 +14,7 @@ from io import StringIO   # StringIO behaves like a file object
 class AsteroidRejector:
 
     def __init__(self):
-        print("init is currently empty")
+        stderr.write("init is currently empty\n")
 
     # Class:	AsteroidRejector
     # Method:	trainingData
@@ -22,21 +22,21 @@ class AsteroidRejector:
     # Returns:	int
     # Method signature:	int trainingData(int[] imageData, String[] detections)
     def training_data(imageData, detections):
-        print("training_data not yet implemented")
+        stderr.write("training_data not yet implemented\n")
 
     # Method:	testingData
     # Parameters:	int[], String[]
     # Returns:	int
     # Method signature:	int testingData(int[] imageData, String[] detections)
     def testing_data(imageData=[], detections=[]):
-        print("testing_data not yet implemented")
+        stderr.write("testing_data not yet implemented\n")
 
     # Method:	getAnswer
     # Parameters:
     # Returns:	int[]
     # Method signature:	int[] getAnswer()
     def get_answer():
-        print("get_answer not yet implemented")
+        stderr.write("get_answer not yet implemented\n")
 
 
 if __name__ == "__main__":
@@ -47,19 +47,14 @@ if __name__ == "__main__":
 
     for i in range(1000):
         N = int(stdin.readline())
-        stderr.write("N:"+str(N)+'\n')
         imageData = []
         for j in range(N):
             imageData.append(int(stdin.readline()))
         imageData = np.array(imageData)
-        stderr.write(str(imageData.shape))
 
         M = int(stdin.readline())
-        stderr.write("M:"+str(M)+'\n')
         detect_str = stdin.readline()
-        stderr.write(detect_str)
         detections = np.loadtxt(StringIO(detect_str), dtype=det_list_dtypes)
-        stderr.write("dets:"+str(detections.shape))
 
         result = astRejector.training_data(imageData, detections)
         stdout.write(result)
@@ -68,11 +63,13 @@ if __name__ == "__main__":
         N = int(stdin.readline())
         imageData = []
         for j in range(N):
-            imageData[j] = stdin.readline().split()
+            imageData.append(int(stdin.readline()))
+        imageData = np.array(imageData)
+
         M = int(stdin.readline())
-        detections = []
-        for j in range(M):
-            detections[j] = stdin.readline()
+        detect_str = stdin.readline()
+        detections = np.loadtxt(StringIO(detect_str), dtype=det_list_dtypes)
+
         result = astRejector.testing_data(imageData, detections)
         stdout.write(result)
 
