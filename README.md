@@ -1,3 +1,8 @@
+## My approach
+
+I will be using python analysis libraries along with the original java testing program to evaluate my results.
+
+
 ### [Asteroid Data Hunter microsite](http://www.topcoder.com/asteroids/asteroiddatahunter/)
 
 ### [AsteroidRejector Problem Statement](http://community.topcoder.com/longcontest/?module=ViewProblemStatement&rd=15948&pm=13093)
