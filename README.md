@@ -2,6 +2,10 @@
 
 I will be using python analysis libraries along with the original java testing program to evaluate my results.
 
+The program currently reads in the data for each image sequence and the detections list and feeds it into the train method.
+
+This approach uses the stdin/stdout approach given by the provided java test program in order to receive the data.
+
 
 ### [Asteroid Data Hunter microsite](http://www.topcoder.com/asteroids/asteroiddatahunter/)
 
