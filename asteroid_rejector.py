@@ -7,6 +7,8 @@ from sys import stdin
 from sys import stdout
 from sys import stderr
 
+import pdb
+
 import numpy as np
 from io import StringIO   # StringIO behaves like a file object
 
@@ -21,22 +23,27 @@ class AsteroidRejector:
     # Parameters:	int[], String[]
     # Returns:	int
     # Method signature:	int trainingData(int[] imageData, String[] detections)
-    def training_data(imageData, detections):
+    def training_data(self, imageData, detections):
+        stderr.write(str(detections)+"\n")
+        stderr.write(str(type(detections))+"\n")
         stderr.write("training_data not yet implemented\n")
+        return 0
 
     # Method:	testingData
     # Parameters:	int[], String[]
     # Returns:	int
     # Method signature:	int testingData(int[] imageData, String[] detections)
-    def testing_data(imageData=[], detections=[]):
+    def testing_data(self, imageData, detections):
         stderr.write("testing_data not yet implemented\n")
+        return 0
 
     # Method:	getAnswer
     # Parameters:
     # Returns:	int[]
     # Method signature:	int[] getAnswer()
-    def get_answer():
+    def get_answer(self):
         stderr.write("get_answer not yet implemented\n")
+        return []
 
 
 if __name__ == "__main__":
@@ -53,11 +60,17 @@ if __name__ == "__main__":
         imageData = np.array(imageData)
 
         M = int(stdin.readline())
-        detect_str = stdin.readline()
-        detections = np.loadtxt(StringIO(detect_str), dtype=det_list_dtypes)
+        detections = []
+        pdb.set_trace()
+        for j in range(M):
+            detect_str = stdin.readline()
+            det = np.loadtxt(StringIO(detect_str), dtype=det_list_dtypes)
+            detections.append(det)
+        detections = np.array(detections)
 
         result = astRejector.training_data(imageData, detections)
-        stdout.write(result)
+        stdout.write(str(result))
+        stdout.flush()
 
     for i in range(200):
         N = int(stdin.readline())
@@ -72,8 +85,10 @@ if __name__ == "__main__":
 
         result = astRejector.testing_data(imageData, detections)
         stdout.write(result)
+        stdout.flush()
 
     results = astRejector.get_answer
     stdout.write(len(results))
     for i in range(len(results)):
         stdout.write(results[i])
+    stdout.flush()

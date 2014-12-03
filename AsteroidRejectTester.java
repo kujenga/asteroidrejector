@@ -57,7 +57,7 @@ public class AsteroidRejectTester
 
         return score;
     }
-    
+
 
     public void visualize(ArrayList<Integer> raw, int offset, String fileName) throws Exception
     {
@@ -376,4 +376,3 @@ public class AsteroidRejectTester
         }
     }
 }
-
