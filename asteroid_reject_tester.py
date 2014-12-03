@@ -1,19 +1,43 @@
+#!//anaconda/bin/python
 # tests the AsteroidRejector
+
+import argparse
+
+# boolean
+debug = true
+# boolean
+visualize = false
+# String
+execCommand = null
+# String
+trainFile = null
+# String
+testFile = null
+# String
+folder = ""
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Process test input.')
+    parser.add_argument("-train", "--train_file")
+    parser.add_argument("-test", "--test_file")
+    parser.add_argument("-exec", "--exec_command")
+    parser.add_argument("-silent", "--silent_debug", nargs='0')
+    parser.add_argument("-folder", "--folder_name")
+    parser.add_argument("-vis", "--visualize", nargs='0')
+    args = parser.parse_args()
+
+    trainFile = args.train_file
+    testFile = args.test_file
+    folder = args.folder
+    execCommand = args.exec_command
+    if args.visualize:
+        visualize = true
+    if args.silent_debug:
+        debug = false
 
 
 class AsteroidRejectTester:
-    # boolean
-    debug = true
-    # boolean
-    visualize = false
-    # String
-    execCommand = null
-    # String
-    trainFile = null
-    # String
-    testFile = null
-    # String
-    folder = ""
+
 
     def printMessage(s):
         if (debug):
@@ -106,7 +130,6 @@ class AsteroidRejectTester:
                         int rgb = cr + (cg << 8) + (cb << 16)
                         bi.setRGB(x+(i*74), y, rgb)
             ImageIO.write(bi, "PNG", new File(fileName))
-
 
     #                String    ArrayList<int>
     def loadRawImage(filename, raw):
