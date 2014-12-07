@@ -6,6 +6,9 @@ The program currently reads in the data for each image sequence and the detectio
 
 This approach uses the stdin/stdout approach given by the provided java test program in order to receive the data.
 
+## Setup
+
+I am rewriting the `AsteroidRejectTester.java` file provided byt the competition in python to eliminate the issues with the inter-process communication from the original program that were intended to make it language-independant. This should hopefully speed up the execution of the program significantly, and eliminate previously seen issues with blocking on the sndin and stdout streams.
 
 ### [Asteroid Data Hunter microsite](http://www.topcoder.com/asteroids/asteroiddatahunter/)
 
