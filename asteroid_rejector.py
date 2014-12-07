@@ -6,24 +6,32 @@
 from sys import stderr
 
 import numpy as np
-from io import StringIO   # StringIO behaves like a file object
+from io import StringIO
 
 
 class AsteroidRejector:
 
     def __init__(self):
-        self.det_list_dtypes = {"names": ("det_num", "frame_num", "sexnum", "time", "ra", "dec", "x", "y", "magnitude", "fwhm", "elong", "theta", "rmse", "deltamu", "rejected"),
-                                "formats": (int, int, int, float, float, float, float, float, float, float, float, float, float, float, float, int)}
+        # sets up datatype definitions for the detection lists
+        self.det_dtypes = np.dtype([("uniq_id", int), ("det_num", int), ("frame_num", int),
+                                    ("sexnum", int), ("time", float), ("ra", float), ("dec", float),
+                                    ("x", float), ("y", float), ("magnitude", float),
+                                    ("fwhm", float), ("elong", float), ("theta", float),
+                                    ("rmse", float), ("deltamu", float), ("rejected", int)])
 
     # Class:	AsteroidRejector
     # Method:	trainingData
     # Parameters:	int[], String[]
     # Returns:	int
     # Method signature:	int trainingData(int[] imageData, String[] detections)
-    def training_data(self, imageData, detections_array):
-        detections = np.array(detections_array)
-        print(type(detections))
-        print (detections[0])
+    def training_data(self, imageData, detections):
+        detections = self.convert_detections(detections)  # eliminates erroneous first element
+        imageData = self.convert_image(imageData)
+        print(detections.dtype)
+        print(imageData.shape)
+        # for d in detections[0]:
+        #     stdout.write(str(type(d)) + " ")
+        print("done")
         return 0
 
     # Method:	testingData
@@ -42,12 +50,18 @@ class AsteroidRejector:
         stderr.write("get_answer not yet implemented\n")
         return []
 
+    def convert_detections(self, detection_strs):
+        detections = []
+        for det_str in detection_strs:
+            det = np.loadtxt(StringIO(det_str), dtype=self.det_dtypes)
+            detections.append(det)
+        return np.array(detections)
+
+    def convert_image(self, image_data):
+        return np.array(image_data)
 
 # if __name__ == "__main__":
 #     astRejector = AsteroidRejector()
-#
-#     det_list_dtypes = {"names": ("det_num", "frame_num", "sexnum", "time", "ra", "dec", "x", "y", "magnitude", "fwhm", "elong", "theta", "rmse", "deltamu", "rejected"),
-#                        "formats": (int, int, int, float, float, float, float, float, float, float, float, float, float, float, float, int)}
 #
 #     for i in range(1000):
 #         N = int(stdin.readline())

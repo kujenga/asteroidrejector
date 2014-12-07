@@ -165,7 +165,7 @@ class RejectTester:
                     det_id += 1
 
             brdet.close()
-            # self.printMessage(folder + s + ".det loaded. Rows = " + detTraining.size())
+            self.printMessage(folder + s + ".det loaded. Rows = " + str(len(detTraining)))
 
             if (self.visualize):
                 n = len(rawTraining)/(4*64*64)

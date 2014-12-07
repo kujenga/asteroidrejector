@@ -20,18 +20,19 @@ raw image data extracted from 4 (FITS) images of the sky, taken roughly 10 minut
 
 #### .det file information
 
-1. Detection Number -- sequential numbering of detection output of the currently used detection software
-2. Frame Number -- which observation is this row relevant to (1, 2, 3 or 4)
-3. Sexnum -- Source extractor number of the object
-4. Time -- Julian date
-5. RA -- right ascension of object in decimal hours
-6. DEC -- declination in decimal degrees
-7. X -- location in pixels of the object in the original FITS image
-8. Y -- location in pixels of the object in the original FITS image
-9. Magnitude -- brightness of the object in magnitudes
-10. FWHM -- full width at half maximum of Gaussian fit in pixels
-11. Elong -- ratio of long axis to short axis
-12. Theta -- position angle of the long axis
-13. RMSE -- error in fit to straight line
-14. Deltamu -- from Source Extractor, peak value minus threshold over background
-15. Rejected -- this value will be 1 if the operator rejected the detection, 0 otherwise. This column will only be available during the training phase. You need to predict this column
+1. Unique ID -- An identifier for what detected object a row belongs to
+2. Detection Number -- sequential numbering of detection output of the currently used detection software
+3. Frame Number -- which observation is this row relevant to (1, 2, 3 or 4)
+4. Sexnum -- Source extractor number of the object
+5. Time -- Julian date
+6. RA -- right ascension of object in decimal hours
+7. DEC -- declination in decimal degrees
+8. X -- location in pixels of the object in the original FITS image
+9. Y -- location in pixels of the object in the original FITS image
+10. Magnitude -- brightness of the object in magnitudes
+11. FWHM -- full width at half maximum of Gaussian fit in pixels
+12. Elong -- ratio of long axis to short axis
+13. Theta -- position angle of the long axis
+14. RMSE -- error in fit to straight line
+15. Deltamu -- from Source Extractor, peak value minus threshold over background
+16. Rejected -- this value will be 1 if the operator rejected the detection, 0 otherwise. This column will only be available during the training phase. You need to predict this column
