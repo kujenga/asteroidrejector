@@ -117,8 +117,19 @@ public class AsteroidRejectTester
     }
 
     public void loadRawImage(String filename, ArrayList<Integer> raw) throws Exception {
+        // System.out.println("FILENAME: "+filename);
         ObjectInputStream fi = new ObjectInputStream(new FileInputStream(filename));
         byte[] rawbytes = (byte[]) fi.readObject();
+
+        // StringBuilder sb = new StringBuilder();
+        // int counter = 0;
+        // for (byte b : rawbytes) {
+        //   sb.append(String.format("%02X ", b));
+        //   if (counter++ > 5)
+        //       break;
+        // }
+        // System.out.println(sb.toString());
+
         for (int i=0;i+1<rawbytes.length;i+=2)
         {
             int v = (int)(rawbytes[i]&0xFF);

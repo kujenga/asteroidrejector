@@ -8,6 +8,9 @@ from sys import stderr
 import numpy as np
 from io import StringIO
 
+from matplotlib import pyplot as plt
+from scipy.misc import toimage
+
 
 class AsteroidRejector:
 
@@ -27,9 +30,19 @@ class AsteroidRejector:
     def training_data(self, imageData, detections):
         detections = self.convert_detections(detections)  # eliminates erroneous first element
         imageData = self.convert_image(imageData)
-        # for d in detections[0]:
-        #     stdout.write(str(type(d)) + " ")
-        print("done")
+        accepted = 0
+        rejected = 0
+        # plt.imshow(imageData[0], interpolation='nearest')
+        # plt.show()
+        # toimage(imageData[0]).show()
+        for index, detection in enumerate(detections):
+
+            if detection["rejected"] == 1:
+                rejected += 1
+            else:
+                # toimage(imageData[0]).show()
+                accepted += 1
+        print("done training with {} rejected and {} accepted".format(rejected/4, accepted/4))
         return 0
 
     # Method:	testingData
@@ -59,7 +72,7 @@ class AsteroidRejector:
     # converts the raw image data into a 2D array in the form of the image
     def convert_image(self, image_data):
         num_images = int(len(image_data)/4096)
-        image_array = np.ndarray(shape=(num_images, 64, 64), dtype=int)
+        image_array = np.ndarray(shape=(num_images, 64, 64), dtype=np.uint16)
         for index, val in enumerate(image_data):
             image_number = int(index / 4096)
             if image_number >= image_array.shape[0]:

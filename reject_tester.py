@@ -2,6 +2,8 @@
 # tests the AsteroidRejector
 
 import argparse
+from PIL import Image
+import math
 
 from asteroid_rejector import AsteroidRejector
 
@@ -62,65 +64,64 @@ class RejectTester:
 
         return score
 
-    #              ArrayList<int>  int     String
-    # def visualize(raw,             offset, fileName):
-    #
-    #     W = (64+10)*4-10
-    #     BufferedImage bi = BufferedImage(W, 64, 1)
-    #     Graphics2D g = (Graphics2D)bi.getGraphics()
-    #     for y in range(64):
-    #         for x in range(W):
-    #             bi.setRGB(x, y, 0xffffff)
-    #         for i in range(4):
-    #             int off = offset + i*64*64
-    #             int imin = 1 << 20
-    #             int imax = -imin
-    #             # Find min and max
-    #             for j in range(4096):
-    #                 int r = raw.get(j+off)
-    #                 if (r > 65500):
-    #                     continue
-    #                 imin = Math.min(imin, r)
-    #                 imax = Math.max(imax, r)
-    #
-    #             double dmax = (double)(imax) / 256.0
-    #             double dmin = (double)(imin) / 256.0
-    #             if (dmax*0.5-dmin > 10):
-    #                 dmax *= 0.5
-    #
-    #             if (dmax-dmin < 0.0001):
-    #                 dmax += 0.1
-    #
-    #             double linearF = 255.0 / (dmax - dmin)
-    #             double log10 = Math.log(10.0)
-    #             double logF = 255.0 / (Math.log(255.0) / log10)
-    #             for y in range(64):
-    #                 for x in range(64):
-    #                     int ival = raw.get(off++)
-    #                     double dval = (double)(ival) / 256.0
-    #                     if (dval < dmin):
-    #                         ival = 0
-    #                     elif (dval > dmax):
-    #                         ival = 255
-    #                     else:
-    #                         dval = Math.max(0.0, Math.min(dval-dmin, dmax - dmin))
-    #                         double d = ((Math.log(dval * linearF)) / log10) * logF
-    #                         ival = (int)(d)
-    #
-    #                     if (ival < 0):
-    #                         ival = 0
-    #                     if (ival > 255):
-    #                         ival = 255
-    #                     int cr = ival
-    #                     int cg = ival
-    #                     int cb = ival
-    #                     int rgb = cr + (cg << 8) + (cb << 16)
-    #                     bi.setRGB(x+(i*74), y, rgb)
-    #         ImageIO.write(bi, "PNG", new File(fileName))
+    #                      int[]  int     String
+    def visualizeImg(self, raw,   offset, fileName):
+        W = (64+10)*4-10
+        bi = Image.new('RGB', (W, 64))
+        # g = (Graphics2D)bi.getGraphics()
+        for y in range(64):
+            for x in range(W):
+                bi.putpixel((x, y), 0xffffff)
+        for i in range(4):
+            off = offset + i*64*64
+            imin = 1 << 20
+            imax = -imin
+            # Find min and max
+            for j in range(4096):
+                r = raw[j+off]
+                if (r > 65500):
+                    continue
+                imin = min(imin, r)
+                imax = max(imax, r)
+
+            dmax = float((imax) / 256.0)
+            dmin = float((imin) / 256.0)
+            if (dmax*0.5-dmin > 10):
+                dmax *= 0.5
+
+            if (dmax-dmin < 0.0001):
+                dmax += 0.1
+
+            linearF = 255.0 / (dmax - dmin)
+            log10 = math.log(10.0)
+            logF = 255.0 / (math.log(255.0) / log10)
+            for y in range(64):
+                for x in range(64):
+                    ival = raw[off]
+                    off += 1
+                    dval = float((ival) / 256.0)
+                    if (dval < dmin):
+                        ival = 0
+                    elif (dval > dmax):
+                        ival = 255
+                    else:
+                        dval = max(0.0, min(dval-dmin, dmax - dmin))
+                        d = 0.0
+                        if dval * linearF != 0.0:
+                            d = ((math.log(dval * linearF)) / log10) * logF
+                        ival = int(d)
+                    if (ival < 0):
+                        ival = 0
+                    if (ival > 255):
+                        ival = 255
+
+                    bi.putpixel((x+(i*74), y), (ival,ival,ival))
+        bi.save(fileName)
 
     #                String    ArrayList<int>
     def loadRawImage(self, filename, raw):
         with open(filename, 'rb') as f:
+            f.seek(27)
             while True:
                 byte_s = f.read(2)
                 if not byte_s or len(byte_s) < 2:
@@ -168,15 +169,15 @@ class RejectTester:
             self.printMessage(folder + s + ".det loaded. Rows = " + str(len(detTraining)))
 
             if (self.visualize):
-                n = len(rawTraining)/(4*64*64)
-                for i in range(rawTraining.size()/(4*64*64)):
+                n = int(len(rawTraining)/(4*64*64))
+                for i in range(int(len(rawTraining)/(4*64*64))):
                     case_num = det_id - n + i
-                    fileName = case_num + ".png"
-                    if (trainAns.contains(case_num)):
+                    fileName = str(case_num) + ".png"
+                    if (case_num in trainAns):
                         fileName = "R_" + fileName
                     else:
                         fileName = "D_" + fileName
-                    visualize(rawTraining, i*4*64*64, fileName)
+                    self.visualizeImg(rawTraining, i*4*64*64, fileName)
 
             # call trainingData(imageData, detections)
             ast_rejector.training_data(rawTraining, detTraining)
@@ -217,16 +218,16 @@ class RejectTester:
                     det_id += 1
             brdet.close()
 
-            if (visualize):
+            if (self.visualize):
                 n = len(rawTest)/(4*64*64)
-                for i in range(rawTest.size()/(4*64*64)):
+                for i in range(len(rawTest)/(4*64*64)):
                     case_num = det_id - n + i
                     fileName = case_num + ".png"
                     if (modelAnsReject.contains(case_num)):
                         fileName = "R_" + fileName
                     else:
                         fileName = "D_" + fileName
-                    visualize(rawTest, i*4*64*64, fileName)
+                    self.visualize(rawTest, i*4*64*64, fileName)
 
             ast_rejector.training_data(rawTest, detTest)
 
@@ -240,20 +241,20 @@ class RejectTester:
 
         self.testRejector(ast_rejector)
 
-        # # get response from solution
+        # get response from solution
         # cmd = reader.readLine()
-        # n = Integer.parseInt(cmd)
-        # if (n != modelAnsReject.size()+modelAnsDetect.size()):
+        # n = int(cmd)
+        # if (n != modelAnsReject.size() + modelAnsDetect.size()):
         #     self.printMessage("Invalid number of detections in return. " + (modelAnsReject.size()+modelAnsDetect.size()) + " expected, but " + n + " in list.")
         #     self.printMessage("Score = 0")
         #
-        # int[] userAns = new int[n]
+        # userAns = [0]*n
         # for i in range(n):
-        #     String val = reader.readLine()
-        #     userAns[i] = Integer.parseInt(val)
+        #     val = reader.readline()
+        #     userAns[i] = int(val)
         #
         # # call scoring function
-        # double score = scoreAnswer(userAns, modelAnsDetect, modelAnsReject)
+        # score = self.scoreAnswer(userAns, modelAnsDetect, modelAnsReject)
         # self.printMessage("Score = " + score)
 
 
@@ -262,23 +263,21 @@ if __name__ == "__main__":
     parser.add_argument("-train", "--train_file")
     parser.add_argument("-test", "--test_file")
     parser.add_argument("-exec", "--exec_command")
-    parser.add_argument("-silent", "--silent_debug")
+    parser.add_argument("-silent", "--silent_debug", action='store_true')
     parser.add_argument("-folder", "--folder_name")
-    parser.add_argument("-vis", "--visualize")
+    parser.add_argument("-vis", "--visualize", action='store_true')
     args = parser.parse_args()
 
     trainFile = args.train_file
     testFile = args.test_file
     folder = args.folder_name
     execCommand = args.exec_command
-    if args.visualize:
-        visualize = True
-    if args.silent_debug:
-        debug = False
+    vis = args.visualize
+    silent = args.silent_debug
 
     try:
         if (trainFile and testFile and execCommand):
-            art = RejectTester(trainFile, testFile, execCommand)
+            art = RejectTester(trainFile, testFile, execCommand, visualize=vis)
             art.doExec()
         else:
             print("WARNING: nothing to do for this combination of arguments.")
