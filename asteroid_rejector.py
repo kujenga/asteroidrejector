@@ -27,8 +27,6 @@ class AsteroidRejector:
     def training_data(self, imageData, detections):
         detections = self.convert_detections(detections)  # eliminates erroneous first element
         imageData = self.convert_image(imageData)
-        print(detections.dtype)
-        print(imageData.shape)
         # for d in detections[0]:
         #     stdout.write(str(type(d)) + " ")
         print("done")
@@ -50,15 +48,27 @@ class AsteroidRejector:
         stderr.write("get_answer not yet implemented\n")
         return []
 
+    # converts the strings readin from the detection files into numpy arrays
     def convert_detections(self, detection_strs):
         detections = []
-        for det_str in detection_strs:
+        for index, det_str in enumerate(detection_strs):
             det = np.loadtxt(StringIO(det_str), dtype=self.det_dtypes)
             detections.append(det)
         return np.array(detections)
 
+    # converts the raw image data into a 2D array in the form of the image
     def convert_image(self, image_data):
-        return np.array(image_data)
+        num_images = int(len(image_data)/4096)
+        image_array = np.ndarray(shape=(num_images, 64, 64), dtype=int)
+        for index, val in enumerate(image_data):
+            image_number = int(index / 4096)
+            if image_number >= image_array.shape[0]:
+                break
+            pixel_number = index % 4096
+            pixel_x = int(pixel_number / 64)
+            pixel_y = pixel_number % 64
+            image_array[image_number][pixel_x][pixel_y] = image_data[index]
+        return image_array
 
 # if __name__ == "__main__":
 #     astRejector = AsteroidRejector()
