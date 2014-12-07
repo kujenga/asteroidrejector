@@ -8,3 +8,5 @@ offline_training
 output
 
 info/test
+
+*.pyc

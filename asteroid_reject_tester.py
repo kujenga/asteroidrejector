@@ -2,62 +2,39 @@
 # tests the AsteroidRejector
 
 import argparse
-import os
-from subprocess import Popen, PIPE, STDOUT
 
-# boolean
-debug = true
-# boolean
-visualize = false
-# String
-execCommand = null
-# String
-trainFile = null
-# String
-testFile = null
-# String
-folder = ""
+from asteroid_rejector import AsteroidRejector
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Process test input.')
-    parser.add_argument("-train", "--train_file")
-    parser.add_argument("-test", "--test_file")
-    parser.add_argument("-exec", "--exec_command")
-    parser.add_argument("-silent", "--silent_debug", nargs='0')
-    parser.add_argument("-folder", "--folder_name")
-    parser.add_argument("-vis", "--visualize", nargs='0')
-    args = parser.parse_args()
-
-    trainFile = args.train_file
-    testFile = args.test_file
-    folder = args.folder
-    execCommand = args.exec_command
-    if args.visualize:
-        visualize = true
-    if args.silent_debug:
-        debug = false
-
-    try:
-        if (trainFile != null and testFile != null and execCommand != null):
-            AsteroidRejectTester().doExec()
-        else:
-            System.out.println("WARNING: nothing to do for this combination of arguments.")
-    except Exception as e:
-        print(e)
+# # boolean
+# debug = true
+# # boolean
+# visualize = false
+# # String
+# execCommand = null
+# # String
+# trainFile = null
+# # String
+# testFile = null
+# # String
+# folder = ""
 
 
 class AsteroidRejectTester:
 
-    def printMessage(s):
-        if (debug):
-            print(s)
+    def __init__(self, trainFile, testFile, execCommand, debug=True):
+        print("initializing")
+        self.trainFile = trainFile
+        self.testFile = testFile
+        self.execCommand = execCommand
+        self.debug = debug
 
-    # String
-    _ = File.separator
+    def printMessage(self, s):
+        if (self.debug):
+            print(s)
 
     # Score a testcase, given detections and rejections and user answers
     #               int[]    Set<Integer>    Set<Integer>
-    def scoreAnswer(userAns, modelAnsDetect, modelAnsReject):
+    def scoreAnswer(self, userAns, modelAnsDetect, modelAnsReject):
         score = 0.0
         total = 0
         correct = 0
@@ -66,21 +43,21 @@ class AsteroidRejectTester:
             total += 1.0
             id = userAns[i]
             if not modelAnsDetect.contains(id) and not modelAnsReject.contains(id):
-                printMessage("Unique ID " + id + " not valid.")
+                self.printMessage("Unique ID " + id + " not valid.")
                 return 0.0
 
             if userAnsUsed.contains(id):
-                printMessage("Unique ID " + id + " already used.")
+                self.printMessage("Unique ID " + id + " already used.")
                 return 0.0
 
             userAnsUsed.add(id)
 
             if modelAnsDetect.contains(id):
                 correct += 1.0
-                printMessage("1")
+                self.printMessage("1")
                 score += (1000000.0 / modelAnsDetect.size()) * (correct / total)
 
-            printMessage("0")
+            self.printMessage("0")
 
         return score
 
@@ -153,26 +130,27 @@ class AsteroidRejectTester:
                 raw.append(v)
         print(filename + " loaded. Size = " + str(len(raw)))
 
-    def doExec():
+    def doExec(self):
 
         # launch solution
-        printMessage("Executing your solution: " + execCommand.split() + ".")
+        self.printMessage("Executing your solution: " + self.execCommand + ".")
 
-        solution = Popen(execCommand.split(), stdout=PIPE, stdin=PIPE, stderr=PIPE)
-        stdout_data = solution.communicate(input='data_to_write')[0]
+        ast_rejector = AsteroidRejector()
 
-        reader = new BufferedReader(InputStreamReader(solution.getInputStream()))
-        PrintWriter writer = new PrintWriter(solution.getOutputStream())
-        new ErrorStreamRedirector(solution.getErrorStream()).start()
+        # solution = Popen(execCommand.split(), stdout=PIPE, stdin=PIPE, stderr=PIPE)
+        # stdout_data = solution.communicate(input='data_to_write')[0]
+
+        # reader = new BufferedReader(InputStreamReader(solution.getInputStream()))
+        # PrintWriter writer = new PrintWriter(solution.getOutputStream())
+        # new ErrorStreamRedirector(solution.getErrorStream()).start()
 
         # read training file
-        printMessage("Training...")
+        self.printMessage("Training...")
         det_id = 0
         num_train_rjct = 0
-        BufferedReader br = new BufferedReader(new FileReader(trainFile))
-        while (true) {
-            String s = br.readLine()
-            # printMessage(s)
+        # BufferedReader br = new BufferedReader(new FileReader(trainFile))
+        for s in open(trainFile, 'r'):
+            # self.printMessage(s)
             if (s == null):
                 break
             # load raw image data
@@ -180,31 +158,31 @@ class AsteroidRejectTester:
             loadRawImage(folder + s + ".raw", rawTraining)
             # load detection data
             detTraining = []
-            BufferedReader brdet = new BufferedReader(new FileReader(folder + s + ".det"))
+            brdet = open(folder + s + ".det")
             cnt = 0
             trainAns = set([])
             while (true):
-                String row = brdet.readLine()
+                row = brdet.readline()
                 if (row == null):
                     break
 
                 row = det_id + " " + row
                 if (row.charAt(row.length()-1) == '1'):
-                    num_train_rjct++
+                    num_train_rjct += 1
                     trainAns.add(det_id)
 
                 detTraining.add(row)
-                cnt++
+                cnt += 1
                 if ((cnt % 4) == 0):
-                    det_id++
+                    det_id += 1
 
             brdet.close()
-            # printMessage(folder + s + ".det loaded. Rows = " + detTraining.size())
+            # self.printMessage(folder + s + ".det loaded. Rows = " + detTraining.size())
 
             if (visualize):
                 for i in range(rawTraining.size()/(4*64*64)):
-                    int case_num = det_id - n + i
-                    String fileName = case_num + ".png"
+                    case_num = det_id - n + i
+                    fileName = case_num + ".png"
                     if (trainAns.contains(case_num)):
                         fileName = "R_" + fileName
                     else:
@@ -212,11 +190,11 @@ class AsteroidRejectTester:
                     visualize(rawTraining, i*4*64*64, fileName)
 
             # call trainingData(imageData, detections)
-            int[] imageData_train = new int[rawTraining.size()]
-            for i in range(rawTraining.size()):
+            imageData_train = [0]*len(rawTraining)
+            for i in range(len(rawTraining)):
                 imageData_train[i] = rawTraining.get(i)
 
-            String[] detections_train = new String[detTraining.size()]
+            detections_train = [""]*len(detTraining)
             detTraining.toArray(detections_train)
 
             writer.println(imageData_train.length)
@@ -232,138 +210,138 @@ class AsteroidRejectTester:
             writer.flush()
 
             # get response from solution
-            String trainResp = reader.readLine()
+            trainResp = reader.readline()
         br.close()
 
         # read testing file
-        printMessage("Testing...")
+        self.printMessage("Testing...")
         modelAnsReject = set([])
         modelAnsDetect = set([])
-            BufferedReader br = new BufferedReader(new FileReader(testFile))
-            while (true) {
-                String s = br.readLine()
-                # printMessage(s)
-                if (s == null):
-                    break
-
-                # load raw image data
-                rawTest = []
-                loadRawImage(folder + s + ".raw", rawTest)
-                # load detection data
-                detTest = []
-                BufferedReader brdet = new BufferedReader(new FileReader(folder + s + ".det"))
-                int cnt = 0
-                while (true):
-                    String row = brdet.readLine()
-                    if (row == null) {
-                        break
-                    }
-                    row = det_id + " " + row
-                    if (row.charAt(row.length()-1) == '1'):
-                        modelAnsReject.add(det_id)
-                    else:
-                        modelAnsDetect.add(det_id)
-
-                    # remove truth
-                    row = row.substring(0, row.length()-2)
-                    detTest.add(row)
-                    cnt++
-                    if ((cnt % 4) == 0):
-                        det_id++
-
-                brdet.close()
-
-                if (visualize):
-                    for i in range(rawTest.size()/(4*64*64)):
-                        int case_num = det_id - n + i
-                        String fileName = case_num + ".png"
-                        if (modelAnsReject.contains(case_num)):
-                            fileName = "R_" + fileName
-                        else:
-                            fileName = "D_" + fileName
-                        visualize(rawTest, i*4*64*64, fileName)
-
-
-
-                # call testData(imageData, detections)
-                int[] imageData_test = new int[rawTest.size()]
-                for i in range(rawTest.size()):
-                    imageData_test[i] = rawTest.get(i)
-                String[] detections_test = new String[detTest.size()]
-                detTest.toArray(detections_test)
-
-                writer.println(imageData_test.length)
-                for v in imageData_test:
-                    writer.println(v)
-
-                writer.flush()
-
-                writer.println(detections_test.length)
-                for v in detections_test:
-                    writer.println(v)
-
-                writer.flush()
-
-                # get response from solution
-                String testResp = reader.readLine()
-
-            }
-            br.close()
-
-
-        # get response from solution
-        String cmd = reader.readLine()
-        int n = Integer.parseInt(cmd)
-        if (n != modelAnsReject.size()+modelAnsDetect.size()):
-            printMessage("Invalid number of detections in return. " + (modelAnsReject.size()+modelAnsDetect.size()) + " expected, but " + n + " in list.")
-            printMessage("Score = 0")
-
-        int[] userAns = new int[n]
-        for i in range(n):
-            String val = reader.readLine()
-            userAns[i] = Integer.parseInt(val)
-
-        # call scoring function
-        double score = scoreAnswer(userAns, modelAnsDetect, modelAnsReject)
-        printMessage("Score = " + score)
-
-
-
-    def main(String[] args):
-       for i in range(args.length):
-            if (args[i].equals("-train")):
-                trainFile = args[++i]
-            elif (args[i].equals("-test")):
-                testFile = args[++i]
-            elif (args[i].equals("-exec")):
-                execCommand = args[++i]
-            elif (args[i].equals("-silent")):
-                debug = false
-            elif (args[i].equals("-folder")):
-                folder = args[++i]
-            elif (args[i].equals("-vis")):
-                visualize = true
-            else:
-                print("WARNING: unknown argument " + args[i] + ".")
-
-
-class ErrorStreamRedirector:
-    public BufferedReader reader
-
-    public ErrorStreamRedirector(InputStream is):
-        reader = new BufferedReader(new InputStreamReader(is))
-
-
-    def run():
-        while (true):
-            String s
-            try {
-                s = reader.readLine()
-            except Exception, e:
-                # e.printStackTrace()
-                return
-            }
-            if s == null:
+        for s in open(testFile):
+            # self.printMessage(s)
+            if (s == null):
                 break
 
-            System.out.println(s)
+            # load raw image data
+            rawTest = []
+            loadRawImage(folder + s + ".raw", rawTest)
+            # load detection data
+            detTest = []
+            brdet = open(folder + s + ".det", 'w')
+            cnt = 0
+            while (true):
+                row = brdet.readline()
+                if (row == null):
+                    break
+                row = det_id + " " + row
+                if (row.charAt(row.length()-1) == '1'):
+                    modelAnsReject.add(det_id)
+                else:
+                    modelAnsDetect.add(det_id)
+
+                # remove truth
+                row = row.substring(0, row.length()-2)
+                detTest.add(row)
+                cnt += 1
+                if ((cnt % 4) == 0):
+                    det_id += 1
+
+            brdet.close()
+
+            if (visualize):
+                for i in range(rawTest.size()/(4*64*64)):
+                    case_num = det_id - n + i
+                    fileName = case_num + ".png"
+                    if (modelAnsReject.contains(case_num)):
+                        fileName = "R_" + fileName
+                    else:
+                        fileName = "D_" + fileName
+                    visualize(rawTest, i*4*64*64, fileName)
+
+            # call testData(imageData, detections)
+            imageData_test = [0]*len(rawTest)
+            for i in range(rawTest.size()):
+                imageData_test[i] = rawTest.get(i)
+            detections_test = [""]*len(detTest)
+            detTest.toArray(detections_test)
+
+            writer.println(imageData_test.length)
+            for v in imageData_test:
+                writer.println(v)
+
+            writer.flush()
+
+            writer.println(detections_test.length)
+            for v in detections_test:
+                writer.println(v)
+
+            writer.flush()
+
+            # get response from solution
+            testResp = reader.readline()
+
+        # # get response from solution
+        # cmd = reader.readLine()
+        # n = Integer.parseInt(cmd)
+        # if (n != modelAnsReject.size()+modelAnsDetect.size()):
+        #     self.printMessage("Invalid number of detections in return. " + (modelAnsReject.size()+modelAnsDetect.size()) + " expected, but " + n + " in list.")
+        #     self.printMessage("Score = 0")
+        #
+        # int[] userAns = new int[n]
+        # for i in range(n):
+        #     String val = reader.readLine()
+        #     userAns[i] = Integer.parseInt(val)
+        #
+        # # call scoring function
+        # double score = scoreAnswer(userAns, modelAnsDetect, modelAnsReject)
+        # self.printMessage("Score = " + score)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Process test input.')
+    parser.add_argument("-train", "--train_file")
+    parser.add_argument("-test", "--test_file")
+    parser.add_argument("-exec", "--exec_command")
+    parser.add_argument("-silent", "--silent_debug")
+    parser.add_argument("-folder", "--folder_name")
+    parser.add_argument("-vis", "--visualize")
+    args = parser.parse_args()
+
+    trainFile = args.train_file
+    testFile = args.test_file
+    folder = args.folder_name
+    execCommand = args.exec_command
+    if args.visualize:
+        visualize = True
+    if args.silent_debug:
+        debug = False
+
+    try:
+        if (trainFile and testFile and execCommand):
+            art = AsteroidRejectTester(trainFile, testFile, execCommand)
+            art.doExec()
+        else:
+            print("WARNING: nothing to do for this combination of arguments.")
+    except Exception as e:
+        print(e)
+
+# class ErrorStreamRedirector:
+#     public BufferedReader reader
+#
+#     public ErrorStreamRedirector(InputStream is):
+#         reader = new BufferedReader(new InputStreamReader(is))
+#
+#
+#     def run():
+#         while (true):
+#             String s
+#             try {
+#                 s = reader.readLine()
+#             except Exception, e:
+#                 # e.printStackTrace()
+#                 return
+#             }
+#             if s == null:
+#                 break
+#
+#             System.out.println(s)
