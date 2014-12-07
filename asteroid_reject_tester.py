@@ -2,6 +2,8 @@
 # tests the AsteroidRejector
 
 import argparse
+import os
+from subprocess import Popen, PIPE, STDOUT
 
 # boolean
 debug = true
@@ -35,9 +37,16 @@ if __name__ == "__main__":
     if args.silent_debug:
         debug = false
 
+    try:
+        if (trainFile != null and testFile != null and execCommand != null):
+            AsteroidRejectTester().doExec()
+        else:
+            System.out.println("WARNING: nothing to do for this combination of arguments.")
+    except Exception as e:
+        print(e)
+
 
 class AsteroidRejectTester:
-
 
     def printMessage(s):
         if (debug):
@@ -76,78 +85,83 @@ class AsteroidRejectTester:
         return score
 
     #              ArrayList<int>  int     String
-    def visualize(raw,             offset, fileName):
-
-        W = (64+10)*4-10
-        BufferedImage bi = new BufferedImage(W, 64, 1)
-        Graphics2D g = (Graphics2D)bi.getGraphics()
-        for y in range(64):
-            for x in range(W):
-                bi.setRGB(x, y, 0xffffff)
-            for i in range(4):
-                int off = offset + i*64*64
-                int imin = 1 << 20
-                int imax = -imin
-                # Find min and max
-                for j in range(4096):
-                    int r = raw.get(j+off)
-                    if (r > 65500):
-                        continue
-                    imin = Math.min(imin, r)
-                    imax = Math.max(imax, r)
-
-                double dmax = (double)(imax) / 256.0
-                double dmin = (double)(imin) / 256.0
-                if (dmax*0.5-dmin > 10):
-                    dmax *= 0.5
-
-                if (dmax-dmin < 0.0001):
-                    dmax += 0.1
-
-                double linearF = 255.0 / (dmax - dmin)
-                double log10 = Math.log(10.0)
-                double logF = 255.0 / (Math.log(255.0) / log10)
-                for y in range(64):
-                    for x in range(64):
-                        int ival = raw.get(off++)
-                        double dval = (double)(ival) / 256.0
-                        if (dval < dmin):
-                            ival = 0
-                        elif (dval > dmax):
-                            ival = 255
-                        else:
-                            dval = Math.max(0.0, Math.min(dval-dmin, dmax - dmin))
-                            double d = ((Math.log(dval * linearF)) / log10) * logF
-                            ival = (int)(d)
-
-                        if (ival < 0):
-                            ival = 0
-                        if (ival > 255):
-                            ival = 255
-                        int cr = ival
-                        int cg = ival
-                        int cb = ival
-                        int rgb = cr + (cg << 8) + (cb << 16)
-                        bi.setRGB(x+(i*74), y, rgb)
-            ImageIO.write(bi, "PNG", new File(fileName))
+    # def visualize(raw,             offset, fileName):
+    #
+    #     W = (64+10)*4-10
+    #     BufferedImage bi = BufferedImage(W, 64, 1)
+    #     Graphics2D g = (Graphics2D)bi.getGraphics()
+    #     for y in range(64):
+    #         for x in range(W):
+    #             bi.setRGB(x, y, 0xffffff)
+    #         for i in range(4):
+    #             int off = offset + i*64*64
+    #             int imin = 1 << 20
+    #             int imax = -imin
+    #             # Find min and max
+    #             for j in range(4096):
+    #                 int r = raw.get(j+off)
+    #                 if (r > 65500):
+    #                     continue
+    #                 imin = Math.min(imin, r)
+    #                 imax = Math.max(imax, r)
+    #
+    #             double dmax = (double)(imax) / 256.0
+    #             double dmin = (double)(imin) / 256.0
+    #             if (dmax*0.5-dmin > 10):
+    #                 dmax *= 0.5
+    #
+    #             if (dmax-dmin < 0.0001):
+    #                 dmax += 0.1
+    #
+    #             double linearF = 255.0 / (dmax - dmin)
+    #             double log10 = Math.log(10.0)
+    #             double logF = 255.0 / (Math.log(255.0) / log10)
+    #             for y in range(64):
+    #                 for x in range(64):
+    #                     int ival = raw.get(off++)
+    #                     double dval = (double)(ival) / 256.0
+    #                     if (dval < dmin):
+    #                         ival = 0
+    #                     elif (dval > dmax):
+    #                         ival = 255
+    #                     else:
+    #                         dval = Math.max(0.0, Math.min(dval-dmin, dmax - dmin))
+    #                         double d = ((Math.log(dval * linearF)) / log10) * logF
+    #                         ival = (int)(d)
+    #
+    #                     if (ival < 0):
+    #                         ival = 0
+    #                     if (ival > 255):
+    #                         ival = 255
+    #                     int cr = ival
+    #                     int cg = ival
+    #                     int cb = ival
+    #                     int rgb = cr + (cg << 8) + (cb << 16)
+    #                     bi.setRGB(x+(i*74), y, rgb)
+    #         ImageIO.write(bi, "PNG", new File(fileName))
 
     #                String    ArrayList<int>
     def loadRawImage(filename, raw):
-        ObjectInputStream fi = new ObjectInputStream(new FileInputStream(filename))
-        byte[] rawbytes = (byte[]) fi.readObject()
-        for in range(0, rawbytes.length, 2):
-            v = (int)(rawbytes[i] & 0xFF)
-            v |= (int)(rawbytes[i+1] & 0xFF) << 8
-            raw.add(v)
-        # printMessage(filename + " loaded. Size = " + raw.size())
+        with open(filename, 'rb') as f:
+            while 1:
+                byte_s = f.read(12)
+                if not byte_s:
+                    break
+                byte = byte_s[0]
+                v = (int)(rawbytes[i] & 0xFF)
+                v |= (int)(rawbytes[i+1] & 0xFF) << 8
+                raw.append(v)
+        print(filename + " loaded. Size = " + str(len(raw)))
 
     def doExec():
 
         # launch solution
-        printMessage("Executing your solution: " + execCommand + ".")
-        Process solution = Runtime.getRuntime().exec(execCommand)
+        printMessage("Executing your solution: " + execCommand.split() + ".")
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(solution.getInputStream()))
+        solution = Popen(execCommand.split(), stdout=PIPE, stdin=PIPE, stderr=PIPE)
+        stdout_data = solution.communicate(input='data_to_write')[0]
+
+        reader = new BufferedReader(InputStreamReader(solution.getInputStream()))
         PrintWriter writer = new PrintWriter(solution.getOutputStream())
         new ErrorStreamRedirector(solution.getErrorStream()).start()
 
@@ -331,14 +345,6 @@ class AsteroidRejectTester:
                 visualize = true
             else:
                 print("WARNING: unknown argument " + args[i] + ".")
-        try:
-            if (trainFile != null and testFile != null and execCommand != null):
-                new AsteroidRejectTester().doExec()
-            else:
-                System.out.println("WARNING: nothing to do for this combination of arguments.")
-        except Exception, e:
-            System.out.println("FAILURE: " + e.getMessage())
-            e.printStackTrace()
 
 
 class ErrorStreamRedirector:
