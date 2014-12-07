@@ -9,7 +9,7 @@ import numpy as np
 from io import StringIO
 
 from matplotlib import pyplot as plt
-from scipy.misc import toimage
+# from scipy.misc import toimage
 
 
 class AsteroidRejector:

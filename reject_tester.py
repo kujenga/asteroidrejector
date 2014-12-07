@@ -115,7 +115,7 @@ class RejectTester:
                     if (ival > 255):
                         ival = 255
 
-                    bi.putpixel((x+(i*74), y), (ival,ival,ival))
+                    bi.putpixel((x+(i*74), y), (ival, ival, ival))
         bi.save(fileName)
 
     #                String    ArrayList<int>
@@ -149,14 +149,14 @@ class RejectTester:
             detTraining = []
             brdet = open(folder + s + ".det")
             cnt = 0
-            trainAns = set([])
+            trainAns = []
             while (True):
                 row = brdet.readline()
                 if (not row):
                     break
 
                 row = str(det_id) + " " + row
-                if (row[-1] == '1'):
+                if (row[-2] == '1'):
                     num_train_rjct += 1
                     trainAns.append(det_id)
 
@@ -166,6 +166,8 @@ class RejectTester:
                     det_id += 1
 
             brdet.close()
+            trainAns = set(trainAns)  # convert the built list of rejected files to a set
+
             self.printMessage(folder + s + ".det loaded. Rows = " + str(len(detTraining)))
 
             if (self.visualize):
