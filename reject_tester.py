@@ -19,14 +19,15 @@ from asteroid_rejector import AsteroidRejector
 # folder = ""
 
 
-class AsteroidRejectTester:
+class RejectTester:
 
-    def __init__(self, trainFile, testFile, execCommand, debug=True):
+    def __init__(self, trainFile, testFile, execCommand, debug=True, visualize=False):
         print("initializing")
         self.trainFile = trainFile
         self.testFile = testFile
         self.execCommand = execCommand
         self.debug = debug
+        self.visualize = visualize
 
     def printMessage(self, s):
         if (self.debug):
@@ -118,15 +119,14 @@ class AsteroidRejectTester:
     #         ImageIO.write(bi, "PNG", new File(fileName))
 
     #                String    ArrayList<int>
-    def loadRawImage(filename, raw):
+    def loadRawImage(self, filename, raw):
         with open(filename, 'rb') as f:
-            while 1:
-                byte_s = f.read(12)
-                if not byte_s:
+            while True:
+                byte_s = f.read(2)
+                if not byte_s or len(byte_s) < 2:
                     break
-                byte = byte_s[0]
-                v = (int)(rawbytes[i] & 0xFF)
-                v |= (int)(rawbytes[i+1] & 0xFF) << 8
+                v = int(byte_s[0] & 0xFF)
+                v |= int(byte_s[1] & 0xFF) << 8
                 raw.append(v)
         print(filename + " loaded. Size = " + str(len(raw)))
 
@@ -151,27 +151,28 @@ class AsteroidRejectTester:
         # BufferedReader br = new BufferedReader(new FileReader(trainFile))
         for s in open(trainFile, 'r'):
             # self.printMessage(s)
-            if (s == null):
+            if (not s):
                 break
+            s = s.rstrip()
             # load raw image data
             rawTraining = []
-            loadRawImage(folder + s + ".raw", rawTraining)
+            self.loadRawImage(folder + s + ".raw", rawTraining)
             # load detection data
             detTraining = []
             brdet = open(folder + s + ".det")
             cnt = 0
             trainAns = set([])
-            while (true):
+            while (True):
                 row = brdet.readline()
-                if (row == null):
+                if (not row):
                     break
 
-                row = det_id + " " + row
-                if (row.charAt(row.length()-1) == '1'):
+                row = str(det_id) + " " + row
+                if (row[-1] == '1'):
                     num_train_rjct += 1
-                    trainAns.add(det_id)
+                    trainAns.append(det_id)
 
-                detTraining.add(row)
+                detTraining.append(row)
                 cnt += 1
                 if ((cnt % 4) == 0):
                     det_id += 1
@@ -179,7 +180,7 @@ class AsteroidRejectTester:
             brdet.close()
             # self.printMessage(folder + s + ".det loaded. Rows = " + detTraining.size())
 
-            if (visualize):
+            if (self.visualize):
                 for i in range(rawTraining.size()/(4*64*64)):
                     case_num = det_id - n + i
                     fileName = case_num + ".png"
@@ -190,28 +191,20 @@ class AsteroidRejectTester:
                     visualize(rawTraining, i*4*64*64, fileName)
 
             # call trainingData(imageData, detections)
-            imageData_train = [0]*len(rawTraining)
-            for i in range(len(rawTraining)):
-                imageData_train[i] = rawTraining.get(i)
+            trainResp = ast_rejector.training_data(rawTraining, detTraining)
 
-            detections_train = [""]*len(detTraining)
-            detTraining.toArray(detections_train)
-
-            writer.println(imageData_train.length)
-            for v in imageData_train:
-                writer.println(v)
-
-            writer.flush()
-
-            writer.println(detections_train.length)
-            for v in detections_train:
-                writer.println(v)
-
-            writer.flush()
+            # writer.println(imageData_train.length)
+            # for v in imageData_train:
+            #     writer.println(v)
+            # writer.flush()
+            #
+            # writer.println(detections_train.length)
+            # for v in detections_train:
+            #     writer.println(v)
+            # writer.flush()
 
             # get response from solution
-            trainResp = reader.readline()
-        br.close()
+            # trainResp = reader.readline()
 
         # read testing file
         self.printMessage("Testing...")
@@ -219,7 +212,7 @@ class AsteroidRejectTester:
         modelAnsDetect = set([])
         for s in open(testFile):
             # self.printMessage(s)
-            if (s == null):
+            if (not s):
                 break
 
             # load raw image data
@@ -318,7 +311,7 @@ if __name__ == "__main__":
 
     try:
         if (trainFile and testFile and execCommand):
-            art = AsteroidRejectTester(trainFile, testFile, execCommand)
+            art = RejectTester(trainFile, testFile, execCommand)
             art.doExec()
         else:
             print("WARNING: nothing to do for this combination of arguments.")

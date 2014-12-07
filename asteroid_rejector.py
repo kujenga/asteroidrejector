@@ -24,7 +24,7 @@ class AsteroidRejector:
     # Returns:	int
     # Method signature:	int trainingData(int[] imageData, String[] detections)
     def training_data(self, imageData, detections):
-        stderr.write(str(detections)+"\n")
+        # stderr.write(str(detections)+"\n")
         stderr.write(str(type(detections))+"\n")
         stderr.write("training_data not yet implemented\n")
         return 0
@@ -61,7 +61,6 @@ if __name__ == "__main__":
 
         M = int(stdin.readline())
         detections = []
-        pdb.set_trace()
         for j in range(M):
             detect_str = stdin.readline()
             det = np.loadtxt(StringIO(detect_str), dtype=det_list_dtypes)
