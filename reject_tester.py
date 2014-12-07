@@ -130,20 +130,7 @@ class RejectTester:
                 raw.append(v)
         print(filename + " loaded. Size = " + str(len(raw)))
 
-    def doExec(self):
-
-        # launch solution
-        self.printMessage("Executing your solution: " + self.execCommand + ".")
-
-        ast_rejector = AsteroidRejector()
-
-        # solution = Popen(execCommand.split(), stdout=PIPE, stdin=PIPE, stderr=PIPE)
-        # stdout_data = solution.communicate(input='data_to_write')[0]
-
-        # reader = new BufferedReader(InputStreamReader(solution.getInputStream()))
-        # PrintWriter writer = new PrintWriter(solution.getOutputStream())
-        # new ErrorStreamRedirector(solution.getErrorStream()).start()
-
+    def trainRejector(self, ast_rejector):
         # read training file
         self.printMessage("Training...")
         det_id = 0
@@ -181,6 +168,7 @@ class RejectTester:
             # self.printMessage(folder + s + ".det loaded. Rows = " + detTraining.size())
 
             if (self.visualize):
+                n = len(rawTraining)/(4*64*64)
                 for i in range(rawTraining.size()/(4*64*64)):
                     case_num = det_id - n + i
                     fileName = case_num + ".png"
@@ -191,23 +179,12 @@ class RejectTester:
                     visualize(rawTraining, i*4*64*64, fileName)
 
             # call trainingData(imageData, detections)
-            trainResp = ast_rejector.training_data(rawTraining, detTraining)
+            ast_rejector.training_data(rawTraining, detTraining)
 
-            # writer.println(imageData_train.length)
-            # for v in imageData_train:
-            #     writer.println(v)
-            # writer.flush()
-            #
-            # writer.println(detections_train.length)
-            # for v in detections_train:
-            #     writer.println(v)
-            # writer.flush()
-
-            # get response from solution
-            # trainResp = reader.readline()
-
+    def testRejector(self, ast_rejector):
         # read testing file
         self.printMessage("Testing...")
+        det_id = 0
         modelAnsReject = set([])
         modelAnsDetect = set([])
         for s in open(testFile):
@@ -217,14 +194,14 @@ class RejectTester:
 
             # load raw image data
             rawTest = []
-            loadRawImage(folder + s + ".raw", rawTest)
+            self.loadRawImage(folder + s + ".raw", rawTest)
             # load detection data
             detTest = []
             brdet = open(folder + s + ".det", 'w')
             cnt = 0
-            while (true):
+            while (True):
                 row = brdet.readline()
-                if (row == null):
+                if (not row):
                     break
                 row = det_id + " " + row
                 if (row.charAt(row.length()-1) == '1'):
@@ -238,10 +215,10 @@ class RejectTester:
                 cnt += 1
                 if ((cnt % 4) == 0):
                     det_id += 1
-
             brdet.close()
 
             if (visualize):
+                n = len(rawTest)/(4*64*64)
                 for i in range(rawTest.size()/(4*64*64)):
                     case_num = det_id - n + i
                     fileName = case_num + ".png"
@@ -251,27 +228,17 @@ class RejectTester:
                         fileName = "D_" + fileName
                     visualize(rawTest, i*4*64*64, fileName)
 
-            # call testData(imageData, detections)
-            imageData_test = [0]*len(rawTest)
-            for i in range(rawTest.size()):
-                imageData_test[i] = rawTest.get(i)
-            detections_test = [""]*len(detTest)
-            detTest.toArray(detections_test)
+            ast_rejector.training_data(rawTest, detTest)
 
-            writer.println(imageData_test.length)
-            for v in imageData_test:
-                writer.println(v)
+    def doExec(self):
+        self.printMessage("Executing your solution: " + self.execCommand + ".")
+        # create solution class
+        ast_rejector = AsteroidRejector()
 
-            writer.flush()
+        # train the asteroid rejector
+        self.trainRejector(ast_rejector)
 
-            writer.println(detections_test.length)
-            for v in detections_test:
-                writer.println(v)
-
-            writer.flush()
-
-            # get response from solution
-            testResp = reader.readline()
+        self.testRejector(ast_rejector)
 
         # # get response from solution
         # cmd = reader.readLine()
