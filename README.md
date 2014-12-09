@@ -21,6 +21,7 @@ Finally, when the getAnswer method is called, the actual heart of the analysis i
 ## Reference Material
 
 - libraries
+  - [Sci-kit Learn LDA tool](http://scikit-learn.org/stable/modules/generated/sklearn.lda.LDA.html)
   - LDA step-through: http://sebastianraschka.com/Articles/2014_python_lda.html
   - [matplotlib PCA](http://matplotlib.org/api/mlab_api.html#matplotlib.mlab.PCA)
   - [scikit-learn PCA](http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html)

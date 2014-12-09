@@ -3,13 +3,11 @@
 
 # Aaron Taylor
 
-from sys import stderr
-
 import numpy as np
 import pandas as pd
 from io import StringIO
 
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 # from scipy.misc import toimage
 
 from sklearn.lda import LDA
@@ -21,22 +19,18 @@ class AsteroidRejector:
 
     def __init__(self):
         # sets up datatype definitions for the detection lists
-        self.trn_dtypes = np.dtype([("uniq_id", int), ("det_num", int), ("frame_num", int),
+        self.det_dtypes = np.dtype([("uniq_id", int), ("det_num", int), ("frame_num", int),
                                     ("sexnum", int), ("time", float), ("ra", float), ("dec", float),
                                     ("x", float), ("y", float), ("magnitude", float),
                                     ("fwhm", float), ("elong", float), ("theta", float),
                                     ("rmse", float), ("deltamu", float), ("rejected", int)])
 
-        # sets up datatype definitions for the detection lists
-        self.tst_dtypes = np.dtype([("uniq_id", int), ("det_num", int), ("frame_num", int),
-                                    ("sexnum", int), ("time", float), ("ra", float), ("dec", float),
-                                    ("x", float), ("y", float), ("magnitude", float),
-                                    ("fwhm", float), ("elong", float), ("theta", float),
-                                    ("rmse", float), ("deltamu", float)])
-        self.detect_images = []
-        self.reject_images = []
+        self.train_images = []
+        self.train_classes = []
 
         self.test_images = []
+        self.test_classes = []
+        self.test_ids = []
 
     # Class:	AsteroidRejector
     # Method:	trainingData
@@ -44,26 +38,26 @@ class AsteroidRejector:
     # Returns:	int
     # Method signature:	int trainingData(int[] imageData, String[] detections)
     def training_data(self, imageData, detections):
-        detections = self.convert_detections(detections, False)
+        detections = self.convert_detections(detections)
         imageData = self.convert_time_series(imageData)
-        accepted = 0
+        assert len(detections) == 4*len(imageData), "there should be 4 detections for each vector"
+
         rejected = 0
+        detected = 0
         # plt.imshow(imageData[0], interpolation='nearest')
         # plt.show()
-        # toimage(imageData[0]).show()
-        for index, detection in enumerate(detections):
-
-            if detection["rejected"] == 1:
+        self.train_images.extend(imageData)
+        for index in range(0, len(detections), 4):
+            if detections[index]["rejected"] == 1:
                 rejected += 1
-                if index % 4 == 0:
-                    self.reject_images.append(imageData[int(index/4)])
+                self.train_classes.append(0)
             else:
-                # when the first detection in a set of 4 is found, store it in the running array
-                if index % 4 == 0:
-                    self.detect_images.append(imageData[int(index/4)])
-                # toimage(imageData[0]).show()
-                accepted += 1
-        print("finished training round with {} rejected and {} accepted".format(rejected/4, accepted/4))
+                detected += 1
+                self.train_classes.append(1)
+
+        assert len(self.train_images) == len(self.train_classes), "classes and images should have equal length"
+
+        print("finished training round with {} rejected and {} accepted".format(rejected, detected))
         return 0
 
     # Method:	testingData
@@ -71,9 +65,19 @@ class AsteroidRejector:
     # Returns:	int
     # Method signature:	int testingData(int[] imageData, String[] detections)
     def testing_data(self, imageData, detections):
-        detections = self.convert_detections(detections, testing=True)
+        detections = self.convert_detections(detections)
         imageData = self.convert_time_series(imageData)
-        self.test_images.append(imageData)
+        self.test_images.extend(imageData)
+
+        for index in range(0, len(detections), 4):
+            self.test_ids.append(int(detections[index]["uniq_id"]))
+            if detections[index]["rejected"] == 1:
+                self.test_classes.append(0)
+            else:
+                self.test_classes.append(1)
+
+        assert len(self.test_images) == len(self.test_classes), "classes {} and images {} should have equal length".format(len(self.test_classes), len(self.test_images))
+
         print("loaded testing data with {} records".format(len(imageData)))
         return 0
 
@@ -82,20 +86,27 @@ class AsteroidRejector:
     # Returns:	int[]
     # Method signature:	int[] getAnswer()
     def get_answer(self):
-        rej_num = len(self.reject_images)
-        det_num = len(self.detect_images)
-
         # uses pandas dataframe to create an np.ndarray of the class labels
-        images = pd.DataFrame(self.reject_images + self.detect_images).values
-        labels = pd.DataFrame([0]*rej_num + [1]*det_num).values.reshape(1, images.shape[0])[0]
+        train_images = pd.DataFrame(self.train_images).values
+        train_labels = np.array(self.train_classes)
 
         # LDA
-        sklearn_lda = LDA(n_components=2)
-        X_lda_sklearn = sklearn_lda.fit_transform(images, labels)
+        sklearn_lda = LDA(n_components=100)
+        print("fitting ", train_images.shape[0], " records")
+        sklearn_lda.fit(train_images, train_labels)
 
-        result = self.LDA(images, labels)
-        print("LDA result: {}".format(result))
-        return list(labels)
+        tst_images = pd.DataFrame(self.test_images).values
+        tst_labels = np.array(self.test_classes)
+        tst_ids = np.array(self.test_ids)
+
+        score = sklearn_lda.score(tst_images, tst_labels)
+        print("sklearn LDA score on ", tst_images.shape[0], " records: ", score)
+
+        results = sklearn_lda.predict(tst_images)
+
+        result_ids = tst_ids[results == 1]
+
+        return result_ids
 
     # implementation followed from: http://sebastianraschka.com/Articles/2014_python_lda.html#step-1-computing-the-d-dimensional-mean-vectors
     def LDA(self, X, y):
@@ -104,7 +115,7 @@ class AsteroidRejector:
         print("n_series: {} n_dim: {}".format(n_series, n_dim))
         # y = y.reshape(1, n_series)[0]
 
-        label_dict = {0: "rejected", 1: "detected"}
+        # label_dict = {0: "rejected", 1: "detected"}
 
         # Step 1:
         # calculate mean vectors
@@ -194,14 +205,12 @@ class AsteroidRejector:
     #######################################################
 
     # converts the strings readin from the detection files into numpy arrays
-    def convert_detections(self, detection_strs, testing=False):
+    def convert_detections(self, detection_strs):
         detections = []
-        # removes class from data types for testing
-        dt = self.tst_dtypes if testing else self.trn_dtypes
         for index, det_str in enumerate(detection_strs):
-            det = np.loadtxt(StringIO(det_str), dtype=dt)
+            det = np.loadtxt(StringIO(det_str), dtype=self.det_dtypes)
             detections.append(det)
-        return np.array(detections)
+        return pd.DataFrame(detections).values
 
     # converts the raw image data into array of 1D arrays of the 4 images in a time series
     def convert_time_series(self, raw):

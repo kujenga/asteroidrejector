@@ -36,14 +36,16 @@ class RejectTester:
             print(s)
 
     # Score a testcase, given detections and rejections and user answers
-    #               int[]    Set<Integer>    Set<Integer>
+    #                     int[]    Set<Integer>    Set<Integer>
     def scoreAnswer(self, userAns, modelAnsDetect, modelAnsReject):
         print("Scoring...")
+
         score = 0.0
         total = 0.0
         correct = 0.0
         userAnsUsed = set()
         for i, val_id in enumerate(userAns):
+            print("scoring: ", i, " ", val_id)
             total += 1.0
             if (val_id not in modelAnsDetect) and val_id not in modelAnsReject:
                 self.printMessage("Unique ID {} not valid.".format(val_id))
@@ -57,8 +59,9 @@ class RejectTester:
 
             if val_id in modelAnsDetect:
                 correct += 1.0
+                print("detection")
                 self.printMessage("1")
-                score += (1000000.0 / modelAnsDetect.size()) * (correct / total)
+                score += (1000000.0 / len(modelAnsDetect)) * (correct / total)
 
             self.printMessage("0")
 
@@ -119,7 +122,7 @@ class RejectTester:
         #             bi.putpixel((x+(i*74), y), (ival, ival, ival))
         # bi.save(fileName)
 
-    #                String    ArrayList<int>
+    #                      String    int[]
     def loadRawImage(self, filename, raw):
         with open(filename, 'rb') as f:
             f.seek(27)
@@ -214,7 +217,7 @@ class RejectTester:
                     modelAnsDetect.append(det_id)
 
                 # remove truth
-                row = row[:-2]
+                # row = row[:-2]
                 detTest.append(row)
                 cnt += 1
                 if ((cnt % 4) == 0):
@@ -233,6 +236,11 @@ class RejectTester:
                     else:
                         fileName = "D_" + fileName
                     self.visualize(rawTest, i*4*64*64, fileName)
+            # pass the testing data to the asteroid_rejector
+            if len(rawTest) != len(detTest)*64*64:
+                print("ERROR: ", len(rawTest)/(64*64), " vs ", len(detTest))
+                continue
+
             ast_rejector.testing_data(rawTest, detTest)
         return modelAnsReject, modelAnsDetect
 
@@ -259,9 +267,8 @@ class RejectTester:
             self.printMessage("Score = 0")
 
         # call scoring function
-        print("will score answer")
         score = self.scoreAnswer(userAns, modelAnsDetect, modelAnsReject)
-        self.printMessage("Score = " + score)
+        print("Score = ", score)
 
 
 if __name__ == "__main__":
