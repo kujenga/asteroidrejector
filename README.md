@@ -8,7 +8,25 @@ This approach uses the stdin/stdout approach given by the provided java test pro
 
 ## Setup
 
-I am rewriting the `AsteroidRejectTester.java` file provided byt the competition in python to eliminate the issues with the inter-process communication from the original program that were intended to make it language-independant. This should hopefully speed up the execution of the program significantly, and eliminate previously seen issues with blocking on the sndin and stdout streams.
+I am rewriting the `AsteroidRejectTester.java` file provided byt the competition in python to eliminate the issues with the inter-process communication from the original program that were intended to make it language-independant. This should speed up the execution of the program significantly, and eliminate previously seen issues with blocking on the stdin and stdout streams.
+
+## My Algorithm
+
+The training phase of the algorithm simply import the data and stores it in array format. The 4-image time series data is transformed into a single stream of data that represents more accurately what the progression of changes is between the image. There are a variety of methods to do this which are currently being explored.
+
+After all the training data is inputted, the test data is inputted and stored in a similar format.
+
+Finally, when the getAnswer method is called, the actual heart of the analysis is performed. A Principal Component Analysis is performed in the set of training data, and
+
+## Reference Material
+
+- libraries
+  - [matplotlib PCA](http://matplotlib.org/api/mlab_api.html#matplotlib.mlab.PCA)
+  - [scikit-learn PCA](http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html)
+- research
+  - http://ieeexplore.ieee.org/xpl/login.jsp?tp=&arnumber=4293066&url=http%3A%2F%2Fieeexplore.ieee.org%2Fxpls%2Fabs_all.jsp%3Farnumber%3D4293066
+  - http://stackoverflow.com/questions/1730600/principal-component-analysis-in-python
+
 
 ### [Asteroid Data Hunter microsite](http://www.topcoder.com/asteroids/asteroiddatahunter/)
 
