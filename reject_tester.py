@@ -38,24 +38,24 @@ class RejectTester:
     # Score a testcase, given detections and rejections and user answers
     #               int[]    Set<Integer>    Set<Integer>
     def scoreAnswer(self, userAns, modelAnsDetect, modelAnsReject):
+        print("Scoring...")
         score = 0.0
-        total = 0
-        correct = 0
-        userAnsUsed = set([])
-        for i in range(userAns.length):
+        total = 0.0
+        correct = 0.0
+        userAnsUsed = set()
+        for i, val_id in enumerate(userAns):
             total += 1.0
-            id = userAns[i]
-            if not modelAnsDetect.contains(id) and not modelAnsReject.contains(id):
-                self.printMessage("Unique ID " + id + " not valid.")
+            if (val_id not in modelAnsDetect) and val_id not in modelAnsReject:
+                self.printMessage("Unique ID {} not valid.".format(val_id))
                 return 0.0
 
-            if userAnsUsed.contains(id):
-                self.printMessage("Unique ID " + id + " already used.")
+            if val_id in userAnsUsed:
+                self.printMessage("Unique ID {} already used.".format(val_id))
                 return 0.0
 
-            userAnsUsed.add(id)
+            userAnsUsed.add(val_id)
 
-            if modelAnsDetect.contains(id):
+            if val_id in modelAnsDetect:
                 correct += 1.0
                 self.printMessage("1")
                 score += (1000000.0 / modelAnsDetect.size()) * (correct / total)
@@ -188,50 +188,55 @@ class RejectTester:
         # read testing file
         self.printMessage("Testing...")
         det_id = 0
-        modelAnsReject = set([])
-        modelAnsDetect = set([])
+        modelAnsReject = []
+        modelAnsDetect = []
         for s in open(testFile):
             # self.printMessage(s)
             if (not s):
                 break
-
+            s = s.rstrip()
             # load raw image data
             rawTest = []
             self.loadRawImage(folder + s + ".raw", rawTest)
             # load detection data
             detTest = []
-            brdet = open(folder + s + ".det", 'w')
+            brdet = open(folder + s + ".det")
             cnt = 0
             while (True):
                 row = brdet.readline()
                 if (not row):
                     break
-                row = det_id + " " + row
-                if (row.charAt(row.length()-1) == '1'):
-                    modelAnsReject.add(det_id)
+                row = str(det_id) + " " + row
+                if (row[-2] == '1'):
+                    modelAnsReject.append(det_id)
                 else:
-                    modelAnsDetect.add(det_id)
+                    modelAnsDetect.append(det_id)
 
                 # remove truth
-                row = row.substring(0, row.length()-2)
-                detTest.add(row)
+                row = row[:-2]
+                detTest.append(row)
                 cnt += 1
                 if ((cnt % 4) == 0):
                     det_id += 1
             brdet.close()
 
+            self.printMessage(folder + s + ".det loaded. Rows = " + str(len(detTest)))
+
             if (self.visualize):
                 n = len(rawTest)/(4*64*64)
                 for i in range(len(rawTest)/(4*64*64)):
                     case_num = det_id - n + i
-                    fileName = case_num + ".png"
+                    fileName = str(case_num) + ".png"
                     if (modelAnsReject.contains(case_num)):
                         fileName = "R_" + fileName
                     else:
                         fileName = "D_" + fileName
                     self.visualize(rawTest, i*4*64*64, fileName)
+            ast_rejector.testing_data(rawTest, detTest)
+        return modelAnsReject, modelAnsDetect
 
-            ast_rejector.training_data(rawTest, detTest)
+    def scoreRejector(self, ast_rejector):
+        return ast_rejector.get_answer()
 
     def doExec(self):
         self.printMessage("Executing your solution: " + self.execCommand + ".")
@@ -241,23 +246,19 @@ class RejectTester:
         # train the asteroid rejector
         self.trainRejector(ast_rejector)
 
-        self.testRejector(ast_rejector)
+        modelAnsReject, modelAnsDetect = self.testRejector(ast_rejector)
 
         # get response from solution
-        # cmd = reader.readLine()
-        # n = int(cmd)
-        # if (n != modelAnsReject.size() + modelAnsDetect.size()):
-        #     self.printMessage("Invalid number of detections in return. " + (modelAnsReject.size()+modelAnsDetect.size()) + " expected, but " + n + " in list.")
-        #     self.printMessage("Score = 0")
-        #
-        # userAns = [0]*n
-        # for i in range(n):
-        #     val = reader.readline()
-        #     userAns[i] = int(val)
-        #
-        # # call scoring function
-        # score = self.scoreAnswer(userAns, modelAnsDetect, modelAnsReject)
-        # self.printMessage("Score = " + score)
+        userAns = self.scoreRejector(ast_rejector)
+
+        n = len(userAns)
+        if (n != len(modelAnsReject) + len(modelAnsDetect)):
+            self.printMessage("Invalid number of detections. {}  expected, but {} in list.".format(len(modelAnsReject) + len(modelAnsDetect), n))
+            self.printMessage("Score = 0")
+
+        # call scoring function
+        score = self.scoreAnswer(userAns, modelAnsDetect, modelAnsReject)
+        self.printMessage("Score = " + score)
 
 
 if __name__ == "__main__":
@@ -285,24 +286,3 @@ if __name__ == "__main__":
             print("WARNING: nothing to do for this combination of arguments.")
     except Exception as e:
         print(e)
-
-# class ErrorStreamRedirector:
-#     public BufferedReader reader
-#
-#     public ErrorStreamRedirector(InputStream is):
-#         reader = new BufferedReader(new InputStreamReader(is))
-#
-#
-#     def run():
-#         while (true):
-#             String s
-#             try {
-#                 s = reader.readLine()
-#             except Exception, e:
-#                 # e.printStackTrace()
-#                 return
-#             }
-#             if s == null:
-#                 break
-#
-#             System.out.println(s)
