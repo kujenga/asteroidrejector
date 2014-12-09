@@ -18,6 +18,11 @@ After all the training data is inputted, the test data is inputted and stored in
 
 Finally, when the getAnswer method is called, the actual heart of the analysis is performed. A [Linear Discriminant Analysis](http://sebastianraschka.com/Articles/2014_python_lda.html) is performed on the set of training data, and the resulting fitted model is then used to classify the test set.
 
+## Server execution
+- start program: `screen ./py_run.sh`
+- exit screen: `ctrl-a d`
+- return `screen -r` (or if `-r` doesn't work `screen -r -x`)
+
 ## Reference Material
 
 - libraries

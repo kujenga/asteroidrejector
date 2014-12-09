@@ -38,14 +38,14 @@ class RejectTester:
     # Score a testcase, given detections and rejections and user answers
     #                     int[]    Set<Integer>    Set<Integer>
     def scoreAnswer(self, userAns, modelAnsDetect, modelAnsReject):
-        print("Scoring...")
+        print("\nScoring")
 
         score = 0.0
         total = 0.0
         correct = 0.0
         userAnsUsed = set()
         for i, val_id in enumerate(userAns):
-            print("scoring: ", i, " ", val_id)
+            self.printMessage("scoring {}: {}".format(i, val_id))
             total += 1.0
             if (val_id not in modelAnsDetect) and val_id not in modelAnsReject:
                 self.printMessage("Unique ID {} not valid.".format(val_id))
@@ -59,7 +59,6 @@ class RejectTester:
 
             if val_id in modelAnsDetect:
                 correct += 1.0
-                print("detection")
                 self.printMessage("1")
                 score += (1000000.0 / len(modelAnsDetect)) * (correct / total)
 
@@ -137,7 +136,7 @@ class RejectTester:
 
     def trainRejector(self, ast_rejector):
         # read training file
-        print("Training...")
+        print("\nTraining")
         det_id = 0
         num_train_rjct = 0
         # BufferedReader br = new BufferedReader(new FileReader(trainFile))
@@ -190,10 +189,10 @@ class RejectTester:
 
     def testRejector(self, ast_rejector):
         # read testing file
-        print("Testing...")
+        print("\nTesting")
         det_id = 0
-        modelAnsReject = []
-        modelAnsDetect = []
+        modelAnsReject = set()
+        modelAnsDetect = set()
         for s in open(testFile):
             # self.printMessage(s)
             if (not s):
@@ -212,9 +211,9 @@ class RejectTester:
                     break
                 row = str(det_id) + " " + row
                 if (row[-2] == '1'):
-                    modelAnsReject.append(det_id)
+                    modelAnsReject.add(det_id)
                 else:
-                    modelAnsDetect.append(det_id)
+                    modelAnsDetect.add(det_id)
 
                 # remove truth
                 # row = row[:-2]
@@ -231,7 +230,7 @@ class RejectTester:
                 for i in range(len(rawTest)/(4*64*64)):
                     case_num = det_id - n + i
                     fileName = str(case_num) + ".png"
-                    if (modelAnsReject.contains(case_num)):
+                    if case_num in modelAnsReject:
                         fileName = "R_" + fileName
                     else:
                         fileName = "D_" + fileName
@@ -245,7 +244,7 @@ class RejectTester:
         return modelAnsReject, modelAnsDetect
 
     def answerRejector(self, ast_rejector):
-        print("Retrieving Answer...")
+        print("\nRetrieving Answer")
         return ast_rejector.get_answer()
 
     def doExec(self):

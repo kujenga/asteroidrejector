@@ -3,6 +3,8 @@
 
 # Aaron Taylor
 
+from sys import stderr
+
 import numpy as np
 import pandas as pd
 from io import StringIO
@@ -26,11 +28,13 @@ class AsteroidRejector:
                                     ("rmse", float), ("deltamu", float), ("rejected", int)])
 
         self.train_images = []
-        self.train_classes = []
+        self.train_rej_class = []
 
         self.test_images = []
-        self.test_classes = []
+        self.test_rej_class = []
         self.test_ids = []
+
+        self.debug = False
 
     # Class:	AsteroidRejector
     # Method:	trainingData
@@ -50,14 +54,14 @@ class AsteroidRejector:
         for index in range(0, len(detections), 4):
             if detections[index]["rejected"] == 1:
                 rejected += 1
-                self.train_classes.append(0)
+                self.train_rej_class.append(1)
             else:
                 detected += 1
-                self.train_classes.append(1)
+                self.train_rej_class.append(0)
 
-        assert len(self.train_images) == len(self.train_classes), "classes and images should have equal length"
+        assert len(self.train_images) == len(self.train_rej_class), "classes and images should have equal length"
 
-        print("finished training round with {} rejected and {} accepted".format(rejected, detected))
+        self.printMsg("finished training round with {} rejected and {} accepted".format(rejected, detected))
         return 0
 
     # Method:	testingData
@@ -72,13 +76,13 @@ class AsteroidRejector:
         for index in range(0, len(detections), 4):
             self.test_ids.append(int(detections[index]["uniq_id"]))
             if detections[index]["rejected"] == 1:
-                self.test_classes.append(0)
+                self.test_rej_class.append(1)
             else:
-                self.test_classes.append(1)
+                self.test_rej_class.append(0)
 
-        assert len(self.test_images) == len(self.test_classes), "classes {} and images {} should have equal length".format(len(self.test_classes), len(self.test_images))
+        assert len(self.test_images) == len(self.test_rej_class), "classes {} and images {} should have equal length".format(len(self.test_rej_class), len(self.test_images))
 
-        print("loaded testing data with {} records".format(len(imageData)))
+        self.printMsg("loaded testing data with {} records".format(len(imageData)))
         return 0
 
     # Method:	getAnswer
@@ -88,15 +92,16 @@ class AsteroidRejector:
     def get_answer(self):
         # uses pandas dataframe to create an np.ndarray of the class labels
         train_images = pd.DataFrame(self.train_images).values
-        train_labels = np.array(self.train_classes)
+        train_labels = np.array(self.train_rej_class)
 
         # LDA
         sklearn_lda = LDA(n_components=100)
         print("fitting ", train_images.shape[0], " records")
         sklearn_lda.fit(train_images, train_labels)
 
+        # create properly formatted np.array objects for the different pieces of the dataset
         tst_images = pd.DataFrame(self.test_images).values
-        tst_labels = np.array(self.test_classes)
+        tst_labels = np.array(self.test_rej_class)
         tst_ids = np.array(self.test_ids)
 
         score = sklearn_lda.score(tst_images, tst_labels)
@@ -104,7 +109,7 @@ class AsteroidRejector:
 
         results = sklearn_lda.predict(tst_images)
 
-        result_ids = tst_ids[results == 1]
+        result_ids = tst_ids[results == 0]
 
         return result_ids
 
@@ -235,3 +240,13 @@ class AsteroidRejector:
             pixel_y = pixel_number % 64
             image_array[image_number][pixel_x][pixel_y] = image_data[index]
         return image_array
+
+    #############################
+    # Printing utility method with debug support
+    #############################
+
+    def printMsg(self, *params):
+        if self.debug:
+            print(params)
+        else:
+            print(".", end="", flush=True)
