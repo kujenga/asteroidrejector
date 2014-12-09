@@ -6,13 +6,14 @@
 from sys import stderr
 
 import numpy as np
+import pandas as pd
 from io import StringIO
 
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 # from scipy.misc import toimage
 
-from matplotlib import mlab
-import sklearn.decomposition as deco
+# from matplotlib import mlab
+# import sklearn.decomposition as deco
 
 
 class AsteroidRejector:
@@ -33,6 +34,8 @@ class AsteroidRejector:
                                     ("rmse", float), ("deltamu", float)])
         self.detect_images = []
         self.reject_images = []
+
+        self.test_images = []
 
     # Class:	AsteroidRejector
     # Method:	trainingData
@@ -59,7 +62,7 @@ class AsteroidRejector:
                     self.detect_images.append(imageData[int(index/4)])
                 # toimage(imageData[0]).show()
                 accepted += 1
-        print("done training with {} rejected and {} accepted".format(rejected/4, accepted/4))
+        print("finished training round with {} rejected and {} accepted".format(rejected/4, accepted/4))
         return 0
 
     # Method:	testingData
@@ -69,7 +72,8 @@ class AsteroidRejector:
     def testing_data(self, imageData, detections):
         detections = self.convert_detections(detections, testing=True)
         imageData = self.convert_time_series(imageData)
-        stderr.write("testing_data not yet implemented\n")
+        self.test_images.append(imageData)
+        print("loaded testing data with {} records".format(len(imageData)))
         return 0
 
     # Method:	getAnswer
@@ -77,9 +81,25 @@ class AsteroidRejector:
     # Returns:	int[]
     # Method signature:	int[] getAnswer()
     def get_answer(self):
-        arr = [1]*(len(self.reject_images) + len(self.detect_images))
-        print(self.reject_images[0].shape)
-        return arr
+        rej_num = len(self.reject_images)
+        det_num = len(self.detect_images)
+
+        # uses pandas dataframe to create an np.ndarray of the class labels
+        labels = pd.DataFrame([0]*rej_num + [1]*det_num).values
+        images = pd.DataFrame(self.reject_images + self.detect_images).values
+        result = self.LDA(images, labels)
+        print("LDA result: {}".format(result))
+        return list(labels)
+
+    # implementation followed from: http://sebastianraschka.com/Articles/2014_python_lda.html#step-1-computing-the-d-dimensional-mean-vectors
+    def LDA(self, X, y):
+        print(X.shape)
+        # Step 1:
+        # calculate mean vectors
+        mean_vectors = []
+        for class_label in range(0, 2):
+            mean_vectors.append(np.mean(X[y == class_label], axis=0))
+            print('Mean Vector class {}: {}\n'.format(class_label, mean_vectors[class_label-1]))
 
     #######################################################
     #                                                     #

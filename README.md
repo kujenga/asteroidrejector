@@ -16,7 +16,7 @@ The training phase of the algorithm simply import the data and stores it in arra
 
 After all the training data is inputted, the test data is inputted and stored in a similar format.
 
-Finally, when the getAnswer method is called, the actual heart of the analysis is performed. A Principal Component Analysis is performed in the set of training data, and
+Finally, when the getAnswer method is called, the actual heart of the analysis is performed. A [Linear Discriminant Analysis](http://sebastianraschka.com/Articles/2014_python_lda.html) is performed on the set of training data, and the resulting fitted model is then used to classify the test set.
 
 ## Reference Material
 

@@ -129,11 +129,11 @@ class RejectTester:
                 v = int(byte_s[0] & 0xFF)
                 v |= int(byte_s[1] & 0xFF) << 8
                 raw.append(v)
-        print(filename + " loaded. Size = " + str(len(raw)))
+        self.printMessage(filename + " loaded. Size = " + str(len(raw)))
 
     def trainRejector(self, ast_rejector):
         # read training file
-        self.printMessage("Training...")
+        print("Training...")
         det_id = 0
         num_train_rjct = 0
         # BufferedReader br = new BufferedReader(new FileReader(trainFile))
@@ -186,7 +186,7 @@ class RejectTester:
 
     def testRejector(self, ast_rejector):
         # read testing file
-        self.printMessage("Testing...")
+        print("Testing...")
         det_id = 0
         modelAnsReject = []
         modelAnsDetect = []
@@ -236,6 +236,7 @@ class RejectTester:
         return modelAnsReject, modelAnsDetect
 
     def scoreRejector(self, ast_rejector):
+        print("Scoring...")
         return ast_rejector.get_answer()
 
     def doExec(self):
@@ -249,7 +250,7 @@ class RejectTester:
         modelAnsReject, modelAnsDetect = self.testRejector(ast_rejector)
 
         # get response from solution
-        userAns = self.scoreRejector(ast_rejector)
+        userAns = list(self.scoreRejector(ast_rejector))
 
         n = len(userAns)
         if (n != len(modelAnsReject) + len(modelAnsDetect)):
@@ -266,7 +267,7 @@ if __name__ == "__main__":
     parser.add_argument("-train", "--train_file")
     parser.add_argument("-test", "--test_file")
     parser.add_argument("-exec", "--exec_command")
-    parser.add_argument("-silent", "--silent_debug", action='store_true')
+    parser.add_argument("-debug", "--debug_messages", action='store_true')
     parser.add_argument("-folder", "--folder_name")
     parser.add_argument("-vis", "--visualize", action='store_true')
     args = parser.parse_args()
@@ -276,11 +277,11 @@ if __name__ == "__main__":
     folder = args.folder_name
     execCommand = args.exec_command
     vis = args.visualize
-    silent = args.silent_debug
+    dbg = args.debug_messages
 
     try:
         if (trainFile and testFile and execCommand):
-            art = RejectTester(trainFile, testFile, execCommand, visualize=vis)
+            art = RejectTester(trainFile, testFile, execCommand, visualize=vis, debug=dbg)
             art.doExec()
         else:
             print("WARNING: nothing to do for this combination of arguments.")
