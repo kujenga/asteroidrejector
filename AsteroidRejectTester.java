@@ -61,37 +61,37 @@ public class AsteroidRejectTester
 
     public void visualize(ArrayList<Integer> raw, int offset, String fileName) throws Exception
     {
-            int W = (64+10)*4-10;
-            BufferedImage bi = new BufferedImage(W, 64, 1);
-            Graphics2D g = (Graphics2D)bi.getGraphics();
-            for (int y=0;y<64;y++)
-                for (int x=0;x<W;x++)
-                    bi.setRGB(x, y, 0xffffff);
-            for (int i=0;i<4;i++)
+        int W = (64+10)*4-10;
+        BufferedImage bi = new BufferedImage(W, 64, 1);
+        Graphics2D g = (Graphics2D)bi.getGraphics();
+        for (int y=0;y<64;y++)
+            for (int x=0;x<W;x++)
+                bi.setRGB(x, y, 0xffffff);
+        for (int i=0;i<4;i++)
+        {
+            int off = offset + i*64*64;
+            int imin = 1<<20;
+            int imax = -imin;
+            // Find min and max
+            for (int j=0;j<4096;j++)
             {
-                int off = offset + i*64*64;
-                int imin = 1<<20;
-                int imax = -imin;
-                // Find min and max
-                for (int j=0;j<4096;j++)
-                {
-                    int r = raw.get(j+off);
-                    if (r>65500) continue;
-                    imin = Math.min(imin, r);
-                    imax = Math.max(imax, r);
-                }
-                double dmax = (double)(imax) / 256.0;
-                double dmin = (double)(imin) / 256.0;
-                if (dmax*0.5-dmin > 10)
-                {
-                    dmax *= 0.5;
-                }
-                if (dmax-dmin<0.0001) dmax += 0.1;
+                int r = raw.get(j+off);
+                if (r>65500) continue;
+                imin = Math.min(imin, r);
+                imax = Math.max(imax, r);
+            }
+            double dmax = (double)(imax) / 256.0;
+            double dmin = (double)(imin) / 256.0;
+            if (dmax*0.5-dmin > 10)
+            {
+                dmax *= 0.5;
+            }
+            if (dmax-dmin<0.0001) dmax += 0.1;
 
-                double linearF = 255.0 / (dmax - dmin);
-                double log10 = Math.log(10.0);
-                double logF = 255.0 / (Math.log(255.0) / log10);
-                for (int y=0;y<64;y++)
+            double linearF = 255.0 / (dmax - dmin);
+            double log10 = Math.log(10.0);
+            double logF = 255.0 / (Math.log(255.0) / log10);
+            for (int y=0;y<64;y++) {
                 for (int x=0;x<64;x++)
                 {
                     int ival = raw.get(off++);
@@ -113,7 +113,8 @@ public class AsteroidRejectTester
                     bi.setRGB(x+(i*74),y,rgb);
                 }
             }
-            ImageIO.write(bi, "PNG", new File(fileName));
+        }
+        ImageIO.write(bi, "PNG", new File(fileName));
     }
 
     public void loadRawImage(String filename, ArrayList<Integer> raw) throws Exception {

@@ -1,3 +1,11 @@
+# Asteroid Rejector
+
+Aaron Taylor - Data Mining Final Project
+
+#### [Asteroid Data Hunter microsite](http://www.topcoder.com/asteroids/asteroiddatahunter/)
+
+#### [AsteroidRejector Problem Statement](http://community.topcoder.com/longcontest/?module=ViewProblemStatement&rd=15948&pm=13093)
+
 ## My approach
 
 I will be using python analysis libraries along with the original java testing program to evaluate my results.
@@ -18,6 +26,10 @@ After all the training data is inputted, the test data is inputted and stored in
 
 Finally, when the getAnswer method is called, the actual heart of the analysis is performed. A [Linear Discriminant Analysis](http://sebastianraschka.com/Articles/2014_python_lda.html) is performed on the set of training data, and the resulting fitted model is then used to classify the test set.
 
+### Other Ideas
+- subtract mean pixel value from each image from the total to eliminate anything that is uniform throughout the image
+- lots of low-information pixel values left over, eliminate these
+
 ## Server execution
 - start program: `screen ./py_run.sh`
 - exit screen: `ctrl-a d`
@@ -33,11 +45,6 @@ Finally, when the getAnswer method is called, the actual heart of the analysis i
 - research
   - http://ieeexplore.ieee.org/xpl/login.jsp?tp=&arnumber=4293066&url=http%3A%2F%2Fieeexplore.ieee.org%2Fxpls%2Fabs_all.jsp%3Farnumber%3D4293066
   - http://stackoverflow.com/questions/1730600/principal-component-analysis-in-python
-
-
-### [Asteroid Data Hunter microsite](http://www.topcoder.com/asteroids/asteroiddatahunter/)
-
-### [AsteroidRejector Problem Statement](http://community.topcoder.com/longcontest/?module=ViewProblemStatement&rd=15948&pm=13093)
 
 #### image files
 

@@ -6,6 +6,8 @@ offline_training
 .DS_Store
 
 output
+output_img
+out
 
 info/test
 
