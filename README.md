@@ -68,3 +68,14 @@ raw image data extracted from 4 (FITS) images of the sky, taken roughly 10 minut
 14. RMSE -- error in fit to straight line
 15. Deltamu -- from Source Extractor, peak value minus threshold over background
 16. Rejected -- this value will be 1 if the operator rejected the detection, 0 otherwise. This column will only be available during the training phase. You need to predict this column
+
+
+## Results
+
+- pure LDA with raw data in single vectors
+    + small score: ``
+- pure LDA with normalized data in single vectors
+    + small score: `sklearn LDA score on  762  records:  0.782152230971`
+- Bagging with LDA as the base classifiers
+    + tiny score: ``
+    + small score: ``

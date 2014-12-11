@@ -8,11 +8,12 @@
 import numpy as np
 import pandas as pd
 from io import StringIO
-
-from matplotlib import pyplot as plt
+import time
+# from matplotlib import pyplot as plt
 # from scipy.misc import toimage
 
 from sklearn.lda import LDA
+from sklearn.ensemble import BaggingClassifier
 # from matplotlib import mlab
 # import sklearn.decomposition as deco
 
@@ -35,6 +36,8 @@ class AsteroidRejector:
         self.test_ids = []
 
         self.debug = False
+
+        self.out_file = open('log/{}.log'.format(time.strftime("astrej_%Y%m%d%H%M%S")), 'w')
 
     # Class:	AsteroidRejector
     # Method:	trainingData
@@ -67,7 +70,7 @@ class AsteroidRejector:
 
         assert len(self.train_images) == len(self.train_rej_class), "classes {} and images {} should have equal length".format(len(self.train_rej_class), len(self.train_images))
 
-        self.printMsg("finished training round with {} rejected and {} accepted".format(rejected, detected))
+        self.printMsg("finished training round with {} rejected and {} accepted\n".format(rejected, detected))
         return 0
 
     # Method:	testingData
@@ -88,7 +91,7 @@ class AsteroidRejector:
 
         assert len(self.test_images) == len(self.test_rej_class), "classes and images should have equal length"
 
-        self.printMsg("loaded testing data with {} records".format(len(imageData)))
+        self.printMsg("loaded testing data with {} records\n".format(len(imageData)))
         return 0
 
     # Method:	getAnswer
@@ -98,13 +101,20 @@ class AsteroidRejector:
     def get_answer(self):
         # uses pandas dataframe to create an np.ndarray of the class labels
         train_images = pd.DataFrame(self.train_images).values
-        self.normalize_time_series_array(train_images)
         train_labels = np.array(self.train_rej_class)
 
-        # LDA
-        sklearn_lda = LDA(n_components=100)
-        self.printMsg("fitting ", train_images.shape[0], " records")
-        sklearn_lda.fit(train_images, train_labels)
+        t = time.time()
+        self.normalize_time_series_array(train_images)
+        self.printMsg("finished image data normalization in {}\n".format(time.time() - t))
+
+        # LDA - Linear Discriminant Analyzer
+        t = time.time()
+        sklearn_lda = LDA()
+        # sklearn_lda.fit(train_images, train_labels)
+        blda = BaggingClassifier(sklearn_lda,max_samples=0.5, max_features=0.5)
+        print("created classifier")
+        blda.fit(train_images, train_labels)
+        print("fitted {} training records in {}\n".format(train_images.shape[0], time.time() - t))
 
         # create properly formatted np.array objects for the different pieces of the dataset
         tst_images = pd.DataFrame(self.test_images).values
@@ -112,8 +122,8 @@ class AsteroidRejector:
         tst_labels = np.array(self.test_rej_class)
         tst_ids = np.array(self.test_ids)
 
-        score = sklearn_lda.score(tst_images, tst_labels)
-        self.printMsg("sklearn LDA score on ", tst_images.shape[0], " records: ", score)
+        score = blda.score(tst_images, tst_labels)
+        print("sklearn LDA score on ", tst_images.shape[0], " records: ", score, "\n")
 
         results = sklearn_lda.predict(tst_images)
 
@@ -200,3 +210,4 @@ class AsteroidRejector:
             print(params)
         else:
             print(".", end="", flush=True)
+            # self.out_file.write(*params)
