@@ -75,7 +75,8 @@ raw image data extracted from 4 (FITS) images of the sky, taken roughly 10 minut
 - pure LDA with raw data in single vectors
     + small score: ``
 - pure LDA with normalized data in single vectors
-    + small score: `sklearn LDA score on  762  records:  0.782152230971`
+    + small score: `score on 762 records:  0.782152230971`
 - Bagging with LDA as the base classifiers
-    + tiny score: ``
-    + small score: ``
+    + small score: `score on 762 records:  0.793963254593 `
+- AdaBoost with Perceptron Base Classifiers
+    + small score: `score on 762 records: 0.8070866141732284`

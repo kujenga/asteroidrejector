@@ -9,11 +9,15 @@ import numpy as np
 import pandas as pd
 from io import StringIO
 import time
+
 # from matplotlib import pyplot as plt
 # from scipy.misc import toimage
 
-from sklearn.lda import LDA
-from sklearn.ensemble import BaggingClassifier
+# from sklearn.lda import LDA
+# from sklearn.qda import QDA
+from sklearn.linear_model import Perceptron
+# from sklearn.ensemble import BaggingClassifier
+from sklearn.ensemble import AdaBoostClassifier
 # from matplotlib import mlab
 # import sklearn.decomposition as deco
 
@@ -103,18 +107,25 @@ class AsteroidRejector:
         train_images = pd.DataFrame(self.train_images).values
         train_labels = np.array(self.train_rej_class)
 
-        t = time.time()
+        t = time.monotonic()
         self.normalize_time_series_array(train_images)
-        self.printMsg("finished image data normalization in {}\n".format(time.time() - t))
+        print("finished image data normalization in {}".format(time.monotonic() - t))
 
         # LDA - Linear Discriminant Analyzer
-        t = time.time()
-        sklearn_lda = LDA()
-        # sklearn_lda.fit(train_images, train_labels)
-        blda = BaggingClassifier(sklearn_lda,max_samples=0.5, max_features=0.5)
-        print("created classifier")
-        blda.fit(train_images, train_labels)
-        print("fitted {} training records in {}\n".format(train_images.shape[0], time.time() - t))
+        t = time.monotonic()
+        classifier = Perceptron()
+        # classifier.fit(train_images, train_labels)
+        print("created base classifier in {}".format(time.monotonic() - t))
+
+        t = time.monotonic()
+        ensemble = AdaBoostClassifier(classifier, 
+            n_estimators=200, 
+            algorithm='SAMME')
+        print("created ensemble in {}".format(time.monotonic() - t))
+
+        t = time.monotonic()
+        ensemble.fit(train_images, train_labels)
+        print("fitted {} training records to classifier in {}".format(train_images.shape[0], time.monotonic() - t))
 
         # create properly formatted np.array objects for the different pieces of the dataset
         tst_images = pd.DataFrame(self.test_images).values
@@ -122,10 +133,10 @@ class AsteroidRejector:
         tst_labels = np.array(self.test_rej_class)
         tst_ids = np.array(self.test_ids)
 
-        score = blda.score(tst_images, tst_labels)
-        print("sklearn LDA score on ", tst_images.shape[0], " records: ", score, "\n")
+        score = ensemble.score(tst_images, tst_labels)
+        print("score on {} records: {}".format(tst_images.shape[0], score))
 
-        results = sklearn_lda.predict(tst_images)
+        results = ensemble.predict(tst_images)
 
         result_ids = tst_ids[results == 0]
 

@@ -2,8 +2,10 @@
 # tests the AsteroidRejector
 
 import argparse
-# from PIL import Image
-# import math
+from PIL import Image
+import math
+
+import os
 
 from asteroid_rejector import AsteroidRejector
 
@@ -267,6 +269,7 @@ class RejectTester:
         # call scoring function
         score = self.scoreAnswer(userAns, modelAnsDetect, modelAnsReject)
         print("Score = ", score)
+        os.system('say "reject tester complete"')
 
 
 if __name__ == "__main__":
