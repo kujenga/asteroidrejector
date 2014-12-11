@@ -15,7 +15,9 @@ import time
 
 # from sklearn.lda import LDA
 # from sklearn.qda import QDA
-from sklearn.linear_model import Perceptron
+# from sklearn.linear_model import Perceptron
+# from sklearn.linear_model import SGDClassifier
+from sklearn.svm import SVC
 # from sklearn.ensemble import BaggingClassifier
 from sklearn.ensemble import AdaBoostClassifier
 # from matplotlib import mlab
@@ -70,7 +72,7 @@ class AsteroidRejector:
 
                 # plt.imshow(self.ts_to_visualization(self.normalize_time_series(imageData[index])), interpolation='nearest')
                 # plt.show()
-                # plt.savefig('{}.png'.format(detections[index]["uniq_id"]), bbox_inches='tight')
+                # plt.savefig('out/{}.png'.format(detections[index]["uniq_id"]), bbox_inches='tight')
 
         assert len(self.train_images) == len(self.train_rej_class), "classes {} and images {} should have equal length".format(len(self.train_rej_class), len(self.train_images))
 
@@ -103,35 +105,30 @@ class AsteroidRejector:
     # Returns:	int[]
     # Method signature:	int[] getAnswer()
     def get_answer(self):
-        # uses pandas dataframe to create an np.ndarray of the class labels
+        # properly formats the training images and 
         train_images = pd.DataFrame(self.train_images).values
         train_labels = np.array(self.train_rej_class)
 
+        # create properly formatted np.array objects for the different pieces of the dataset
+        tst_images = pd.DataFrame(self.test_images).values
+        tst_labels = np.array(self.test_rej_class)
+        tst_ids = np.array(self.test_ids)
+
         t = time.monotonic()
         self.normalize_time_series_array(train_images)
+        self.normalize_time_series_array(tst_images)
         print("finished image data normalization in {}".format(time.monotonic() - t))
 
-        # LDA - Linear Discriminant Analyzer
-        t = time.monotonic()
-        classifier = Perceptron()
+        classifier = SVC()
         # classifier.fit(train_images, train_labels)
-        print("created base classifier in {}".format(time.monotonic() - t))
 
-        t = time.monotonic()
         ensemble = AdaBoostClassifier(classifier, 
             n_estimators=200, 
             algorithm='SAMME')
-        print("created ensemble in {}".format(time.monotonic() - t))
 
         t = time.monotonic()
         ensemble.fit(train_images, train_labels)
-        print("fitted {} training records to classifier in {}".format(train_images.shape[0], time.monotonic() - t))
-
-        # create properly formatted np.array objects for the different pieces of the dataset
-        tst_images = pd.DataFrame(self.test_images).values
-        self.normalize_time_series_array(tst_images)
-        tst_labels = np.array(self.test_rej_class)
-        tst_ids = np.array(self.test_ids)
+        print("fitted {} training records to classifier ensemble in {}".format(train_images.shape[0], time.monotonic() - t))
 
         score = ensemble.score(tst_images, tst_labels)
         print("score on {} records: {}".format(tst_images.shape[0], score))

@@ -43,8 +43,9 @@ Finally, when the getAnswer method is called, the actual heart of the analysis i
   - [matplotlib PCA](http://matplotlib.org/api/mlab_api.html#matplotlib.mlab.PCA)
   - [scikit-learn PCA](http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html)
 - research
-  - http://ieeexplore.ieee.org/xpl/login.jsp?tp=&arnumber=4293066&url=http%3A%2F%2Fieeexplore.ieee.org%2Fxpls%2Fabs_all.jsp%3Farnumber%3D4293066
-  - http://stackoverflow.com/questions/1730600/principal-component-analysis-in-python
+    - http://ieeexplore.ieee.org/xpl/login.jsp?tp=&arnumber=4293066&url=http%3A%2F%2Fieeexplore.ieee.org%2Fxpls%2Fabs_all.jsp%3Farnumber%3D4293066
+    - http://stackoverflow.com/questions/1730600/principal-component-analysis-in-python
+    -  
 
 #### image files
 
@@ -74,9 +75,14 @@ raw image data extracted from 4 (FITS) images of the sky, taken roughly 10 minut
 
 - pure LDA with raw data in single vectors
     + small score: ``
-- pure LDA with normalized data in single vectors
+- pure LDA (normalized data)
     + small score: `score on 762 records:  0.782152230971`
-- Bagging with LDA as the base classifiers
+}
+- Bagging with LDA as the base classifiers (normalized data)
     + small score: `score on 762 records:  0.793963254593 `
-- AdaBoost with Perceptron Base Classifiers
+- AdaBoost with Perceptron (normalized data)
     + small score: `score on 762 records: 0.8070866141732284`
+- AdaBoost with Stochastic Gradient Descent (normalized data)
+    + small score: `score on 762 records: 0.8070866141732284`
+- AdaBoost with Support Vector Classifier (normalized data)
+    + small score: `score on 762 records: 0.9763779527559056`
