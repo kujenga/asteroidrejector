@@ -24,16 +24,23 @@ The training phase of the algorithm simply import the data and stores it in arra
 
 After all the training data is inputted, the test data is inputted and stored in a similar format.
 
-Finally, when the getAnswer method is called, the actual heart of the analysis is performed. A [Linear Discriminant Analysis](http://sebastianraschka.com/Articles/2014_python_lda.html) is performed on the set of training data, and the resulting fitted model is then used to classify the test set.
+Finally, when the getAnswer method is called, the heart of the analysis is performed. 
+
+First, the data is proprocessed in an attempt to remove irrelevant information that may be in the frame, especially anything that does not move over the course of the time series. I subtracted the average pixel over the time series form each corresponding pixel in the picture. I also looked into the scikit learn library's image pre-processing libraries, which deal with pixel graphs and feature patch extraction, although those were not used in my final solution.
+
+For classification, after testing a wide variety of methods I determined that an AdaBoost ensemble classivier using Support Vector Classifiers as base classifiers produced the best result by far. This was a suprise to me as I had expected that a more specific approach, such as the [Linear Discriminant Analysis](http://sebastianraschka.com/Articles/2014_python_lda.html), would perform better because it is more application-specific.
 
 ### Other Ideas
 - subtract mean pixel value from each image from the total to eliminate anything that is uniform throughout the image
 - lots of low-information pixel values left over, eliminate these
 
-## Server execution
+## Server background execution
 - start program: `screen ./py_run.sh`
 - exit screen: `ctrl-a d`
 - return `screen -r` (or if `-r` doesn't work `screen -r -x`)
+
+### pyenv on the server
+- pyenv activate py3env
 
 ## Reference Material
 

@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from io import StringIO
 import time
+import threading
 
 # from matplotlib import pyplot as plt
 # from scipy.misc import toimage
@@ -75,7 +76,7 @@ class AsteroidRejector:
                 # plt.show()
                 # plt.savefig('out/{}_norm.png'.format(detections[index]["uniq_id"]), bbox_inches='tight')
 
-        assert len(self.train_images) == len(self.train_rej_class), "classes {} and images {} should have equal length".format(len(self.train_rej_class), len(self.train_images))
+        assert len(self.train_images) == len(self.train_rej_class), "classes and images should have equal length"
 
         self.printMsg("finished training round with {} rejected and {} accepted\n".format(rejected, detected))
         return 0
@@ -145,7 +146,7 @@ class AsteroidRejector:
         return self.run_analysis(train_images, train_labels, tst_images, tst_labels, tst_ids)
 
     def run_analysis(self, train_images, train_labels, tst_images, tst_labels, tst_ids):
-
+        print("running analysis")
         classifier = SVC()
         # classifier.fit(train_images, train_labels)
 
@@ -192,7 +193,7 @@ class AsteroidRejector:
 
     def normalize_time_series_array(self, time_series):
         # iterate over each time series in the array
-        for index, ts in enumerate(time_series):
+        for ts in time_series:
             self.normalize_time_series(ts)
 
     def normalize_time_series(self, time_series):
@@ -247,6 +248,35 @@ class AsteroidRejector:
             print(".", end="", flush=True)
             # self.out_file.write(*params)
 
+class Normalizer(threading.Thread):
+
+    def __init__(self):
+        super.__init__(self)
+        self.lock = threading.lock
+
+    def run(self, img_arr, index_range):
+        for i in index_range:
+            self.normalize_time_series(img_arr[i])
+
+    def normalize_time_series(self, time_series):
+        assert len(time_series) == 64*64*4, "Each time series must consist of 4 64x64 images"
+
+        offset = 64*64  # offset between images in the time series
+        # compute average pixel values across the time series and subtract them from each image
+        # this should get rid of some data that is not in motion and that we don't care about
+        for i in range(0, 64*64-1):
+            px_avg = 0.0
+            # compute average pixel value
+            for j in range(0,4):
+                px_avg += time_series[i + j*offset]
+            px_avg /= 4.0
+            # subtract   average from each of the 4 images
+            for k in range(0,4):
+                time_series[i + k*offset] -= px_avg
+        return time_series
+
+
+
 
 if __name__ == '__main__':
     ast_rejector = AsteroidRejector()
@@ -262,14 +292,14 @@ if __name__ == '__main__':
     tst_images = np.load(f_tst_images)
     tst_labels = np.load(f_tst_labels)
     tst_ids = np.load(f_tst_ids)
-    
+
     f_train_images.close()
     f_train_labels.close()
     f_tst_images.close()
     f_tst_labels.close()
     f_tst_ids.close()
 
-    print(tst_ids)
+    print("loaded in cached files")
 
     results = ast_rejector.run_analysis(train_images, train_labels, tst_images, tst_labels, tst_ids)
 
