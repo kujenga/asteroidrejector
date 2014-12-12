@@ -8,6 +8,8 @@ offline_training
 output
 output_img
 log
+out
+processed
 
 info/test
 

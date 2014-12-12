@@ -2,7 +2,7 @@
 # tests the AsteroidRejector
 
 import argparse
-from PIL import Image
+# from PIL import Image
 import math
 
 import os
@@ -70,57 +70,58 @@ class RejectTester:
 
     #                      int[]  int     String
     def visualizeImg(self, raw,   offset, fileName):
-        W = (64+10)*4-10
-        bi = Image.new('RGB', (W, 64))
-        # g = (Graphics2D)bi.getGraphics()
-        for y in range(64):
-            for x in range(W):
-                bi.putpixel((x, y), 0xffffff)
-        for i in range(4):
-            off = offset + i*64*64
-            imin = 1 << 20
-            imax = -imin
-            # Find min and max
-            for j in range(4096):
-                r = raw[j+off]
-                if (r > 65500):
-                    continue
-                imin = min(imin, r)
-                imax = max(imax, r)
+        pass
+        # W = (64+10)*4-10
+        # bi = Image.new('RGB', (W, 64))
+        # # g = (Graphics2D)bi.getGraphics()
+        # for y in range(64):
+        #     for x in range(W):
+        #         bi.putpixel((x, y), 0xffffff)
+        # for i in range(4):
+        #     off = offset + i*64*64
+        #     imin = 1 << 20
+        #     imax = -imin
+        #     # Find min and max
+        #     for j in range(4096):
+        #         r = raw[j+off]
+        #         if (r > 65500):
+        #             continue
+        #         imin = min(imin, r)
+        #         imax = max(imax, r)
         
-            dmax = float((imax) / 256.0)
-            dmin = float((imin) / 256.0)
-            if (dmax*0.5-dmin > 10):
-                dmax *= 0.5
+        #     dmax = float((imax) / 256.0)
+        #     dmin = float((imin) / 256.0)
+        #     if (dmax*0.5-dmin > 10):
+        #         dmax *= 0.5
         
-            if (dmax-dmin < 0.0001):
-                dmax += 0.1
+        #     if (dmax-dmin < 0.0001):
+        #         dmax += 0.1
         
-            linearF = 255.0 / (dmax - dmin)
-            log10 = math.log(10.0)
-            logF = 255.0 / (math.log(255.0) / log10)
-            for y in range(64):
-                for x in range(64):
-                    ival = raw[off]
-                    off += 1
-                    dval = float((ival) / 256.0)
-                    if (dval < dmin):
-                        ival = 0
-                    elif (dval > dmax):
-                        ival = 255
-                    else:
-                        dval = max(0.0, min(dval-dmin, dmax - dmin))
-                        d = 0.0
-                        if dval * linearF != 0.0:
-                            d = ((math.log(dval * linearF)) / log10) * logF
-                        ival = int(d)
-                    if (ival < 0):
-                        ival = 0
-                    if (ival > 255):
-                        ival = 255
+        #     linearF = 255.0 / (dmax - dmin)
+        #     log10 = math.log(10.0)
+        #     logF = 255.0 / (math.log(255.0) / log10)
+        #     for y in range(64):
+        #         for x in range(64):
+        #             ival = raw[off]
+        #             off += 1
+        #             dval = float((ival) / 256.0)
+        #             if (dval < dmin):
+        #                 ival = 0
+        #             elif (dval > dmax):
+        #                 ival = 255
+        #             else:
+        #                 dval = max(0.0, min(dval-dmin, dmax - dmin))
+        #                 d = 0.0
+        #                 if dval * linearF != 0.0:
+        #                     d = ((math.log(dval * linearF)) / log10) * logF
+        #                 ival = int(d)
+        #             if (ival < 0):
+        #                 ival = 0
+        #             if (ival > 255):
+        #                 ival = 255
         
-                    bi.putpixel((x+(i*74), y), (ival, ival, ival))
-        bi.save(fileName)
+        #             bi.putpixel((x+(i*74), y), (ival, ival, ival))
+        # bi.save(fileName)
 
     #                      String    int[]
     def loadRawImage(self, filename, raw):

@@ -10,7 +10,7 @@ import pandas as pd
 from io import StringIO
 import time
 
-# from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
 # from scipy.misc import toimage
 
 # from sklearn.lda import LDA
@@ -67,12 +67,13 @@ class AsteroidRejector:
                 detected += 1
                 self.train_rej_class.append(0)
 
-                # plt.imshow(self.ts_to_visualization(imageData[index]), interpolation='nearest')
+                plt.imshow(self.ts_to_visualization(imageData[index]), interpolation='nearest')
                 # plt.show()
+                plt.savefig('out/{}_orig.png'.format(detections[index]["uniq_id"]), bbox_inches='tight')
 
-                # plt.imshow(self.ts_to_visualization(self.normalize_time_series(imageData[index])), interpolation='nearest')
+                plt.imshow(self.ts_to_visualization(self.normalize_time_series(imageData[index])), interpolation='nearest')
                 # plt.show()
-                # plt.savefig('out/{}.png'.format(detections[index]["uniq_id"]), bbox_inches='tight')
+                plt.savefig('out/{}_norm.png'.format(detections[index]["uniq_id"]), bbox_inches='tight')
 
         assert len(self.train_images) == len(self.train_rej_class), "classes {} and images {} should have equal length".format(len(self.train_rej_class), len(self.train_images))
 
@@ -119,6 +120,32 @@ class AsteroidRejector:
         self.normalize_time_series_array(tst_images)
         print("finished image data normalization in {}".format(time.monotonic() - t))
 
+        t = time.monotonic()
+
+        f_train_images = open('processed/f_train_images.npy', 'wb')
+        f_train_labels = open('processed/f_train_labels.npy', 'wb')
+        f_tst_images = open('processed/f_tst_images.npy', 'wb')
+        f_tst_labels = open('processed/f_tst_labels.npy', 'wb')
+        f_tst_ids = open('processed/f_tst_ids.npy', 'wb')
+
+        np.save(f_train_images, train_images)
+        np.save(f_train_labels, train_labels) 
+        np.save(f_tst_images, tst_images)
+        np.save(f_tst_labels, tst_labels)
+        np.save(f_tst_ids, tst_ids)
+
+        f_train_images.close()
+        f_train_labels.close()
+        f_tst_images.close()
+        f_tst_labels.close()
+        f_tst_ids.close()
+
+        print("finished saving intermediate data in {}".format(time.monotonic() - t))
+
+        return self.run_analysis(train_images, train_labels, tst_images, tst_labels, tst_ids)
+
+    def run_analysis(self, train_images, train_labels, tst_images, tst_labels, tst_ids):
+
         classifier = SVC()
         # classifier.fit(train_images, train_labels)
 
@@ -135,7 +162,7 @@ class AsteroidRejector:
 
         results = ensemble.predict(tst_images)
 
-        result_ids = tst_ids[results == 0]
+        result_ids = tst_ids[results == 1]
 
         return result_ids
 
@@ -219,3 +246,32 @@ class AsteroidRejector:
         else:
             print(".", end="", flush=True)
             # self.out_file.write(*params)
+
+
+if __name__ == '__main__':
+    ast_rejector = AsteroidRejector()
+
+    f_train_images = open('processed/f_train_images.npy', 'rb')
+    f_train_labels = open('processed/f_train_labels.npy', 'rb')
+    f_tst_images = open('processed/f_tst_images.npy', 'rb')
+    f_tst_labels = open('processed/f_tst_labels.npy', 'rb')
+    f_tst_ids = open('processed/f_tst_ids.npy', 'rb')
+
+    train_images = np.load(f_train_images)
+    train_labels = np.load(f_train_labels) 
+    tst_images = np.load(f_tst_images)
+    tst_labels = np.load(f_tst_labels)
+    tst_ids = np.load(f_tst_ids)
+    
+    f_train_images.close()
+    f_train_labels.close()
+    f_tst_images.close()
+    f_tst_labels.close()
+    f_tst_ids.close()
+
+    print(tst_ids)
+
+    results = ast_rejector.run_analysis(train_images, train_labels, tst_images, tst_labels, tst_ids)
+
+
+
