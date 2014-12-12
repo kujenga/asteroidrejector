@@ -194,22 +194,8 @@ class AsteroidRejector:
     # spawns threads to process the image data in parallel
     def normalize_time_series_array(self, time_series_array):
         # iterate over each time series in the array
-        threads = []
-        count = int(len(time_series_array)/4)
-        for index in range(4):
-            t_range = range(index*count, (index+1)*count)
-            t = threading.Thread(target=self.normalize_ts_block, args=(time_series_array, t_range))
-            threads.append(t)
-            t.start()
-
-        # wait for all threads to join in
-        for t in threads:
-            t.join()
-
-    # called asynchronously by the 
-    def normalize_ts_block(self, img_arr, index_range):
-        for i in index_range:
-            self.normalize_time_series(img_arr[i])
+        for ts in time_series_array:
+            self.normalize_time_series(ts)
 
     def normalize_time_series(self, time_series):
         assert len(time_series) == 64*64*4, "Each time series must consist of 4 64x64 images"
