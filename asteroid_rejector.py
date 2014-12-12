@@ -10,7 +10,7 @@ import pandas as pd
 from io import StringIO
 import time
 
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 # from scipy.misc import toimage
 
 # from sklearn.lda import LDA
@@ -67,13 +67,13 @@ class AsteroidRejector:
                 detected += 1
                 self.train_rej_class.append(0)
 
-                plt.imshow(self.ts_to_visualization(imageData[index]), interpolation='nearest')
+                # plt.imshow(self.ts_to_visualization(imageData[index]), interpolation='nearest')
                 # plt.show()
-                plt.savefig('out/{}_orig.png'.format(detections[index]["uniq_id"]), bbox_inches='tight')
+                # plt.savefig('out/{}_orig.png'.format(detections[index]["uniq_id"]), bbox_inches='tight')
 
-                plt.imshow(self.ts_to_visualization(self.normalize_time_series(imageData[index])), interpolation='nearest')
+                # plt.imshow(self.ts_to_visualization(self.normalize_time_series(imageData[index])), interpolation='nearest')
                 # plt.show()
-                plt.savefig('out/{}_norm.png'.format(detections[index]["uniq_id"]), bbox_inches='tight')
+                # plt.savefig('out/{}_norm.png'.format(detections[index]["uniq_id"]), bbox_inches='tight')
 
         assert len(self.train_images) == len(self.train_rej_class), "classes {} and images {} should have equal length".format(len(self.train_rej_class), len(self.train_images))
 
