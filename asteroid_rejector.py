@@ -163,7 +163,7 @@ class AsteroidRejector:
 
         results = ensemble.predict(tst_images)
 
-        result_ids = tst_ids[results == 1]
+        result_ids = tst_ids[results == 0]
 
         return result_ids
 
