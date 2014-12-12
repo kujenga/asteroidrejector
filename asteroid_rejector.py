@@ -191,10 +191,25 @@ class AsteroidRejector:
             ts_array[series_num][series_index] = raw[raw_index]
         return ts_array
 
-    def normalize_time_series_array(self, time_series):
+    # spawns threads to process the image data in parallel
+    def normalize_time_series_array(self, time_series_array):
         # iterate over each time series in the array
-        for ts in time_series:
-            self.normalize_time_series(ts)
+        threads = []
+        count = int(len(time_series_array)/4)
+        for index in range(4):
+            t_range = range(index*count, (index+1)*count)
+            t = threading.Thread(target=self.normalize_ts_block, args=(time_series_array, t_range))
+            threads.append(t)
+            t.start()
+
+        # wait for all threads to join in
+        for t in threads:
+            t.join()
+
+    # called asynchronously by the 
+    def normalize_ts_block(self, img_arr, index_range):
+        for i in index_range:
+            self.normalize_time_series(img_arr[i])
 
     def normalize_time_series(self, time_series):
         assert len(time_series) == 64*64*4, "Each time series must consist of 4 64x64 images"
@@ -247,35 +262,6 @@ class AsteroidRejector:
         else:
             print(".", end="", flush=True)
             # self.out_file.write(*params)
-
-class Normalizer(threading.Thread):
-
-    def __init__(self):
-        super.__init__(self)
-        self.lock = threading.lock
-
-    def run(self, img_arr, index_range):
-        for i in index_range:
-            self.normalize_time_series(img_arr[i])
-
-    def normalize_time_series(self, time_series):
-        assert len(time_series) == 64*64*4, "Each time series must consist of 4 64x64 images"
-
-        offset = 64*64  # offset between images in the time series
-        # compute average pixel values across the time series and subtract them from each image
-        # this should get rid of some data that is not in motion and that we don't care about
-        for i in range(0, 64*64-1):
-            px_avg = 0.0
-            # compute average pixel value
-            for j in range(0,4):
-                px_avg += time_series[i + j*offset]
-            px_avg /= 4.0
-            # subtract   average from each of the 4 images
-            for k in range(0,4):
-                time_series[i + k*offset] -= px_avg
-        return time_series
-
-
 
 
 if __name__ == '__main__':

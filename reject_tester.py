@@ -41,6 +41,9 @@ class RejectTester:
     #                     int[]    Set<Integer>    Set<Integer>
     def scoreAnswer(self, userAns, modelAnsDetect, modelAnsReject):
         print("\nScoring")
+        print("userAns", userAns)
+        print("modelAnsDetect", modelAnsDetect)
+        print("modelAnsReject", modelAnsReject)
 
         score = 0.0
         total = 0.0
