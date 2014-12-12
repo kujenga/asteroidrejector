@@ -93,3 +93,9 @@ raw image data extracted from 4 (FITS) images of the sky, taken roughly 10 minut
     + small score: `score on 762 records: 0.8070866141732284`
 - AdaBoost with Support Vector Classifier (normalized data)
     + small score: `score on 762 records: 0.9763779527559056`
+    + example score: `score on 4618 records: 0.9653529666522304`
+    + example test program score: `Score =  36498.17058103175`
+
+## Conclusions
+
+Support Vector Machines are awesome! Very suprised that AdaBoost performed as well as it did with SVC base classifiers. Would like to get the provided scoring example working to validate the result with their code. 
